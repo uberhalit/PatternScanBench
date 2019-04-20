@@ -2,6 +2,10 @@
 
 A small and simple benchmark for pattern scan (findpattern) implementations written in C# inspired by [this great C++ comparison](https://github.com/learn-more/findpattern-bench).
 
+## Usage
+
+Copy [memorydump.dat](PatternScanBench/Memorydump/memorydump.dat) into the same folder as the compiled benchmark and run the application.
+
 ## Contributing
 
 Feel free to create a pull request with your own patter scan implementation at any time. Use [PatternScanTemplate.cs](PatternScanBench/Implementations/PatternScanTemplate.cs) as a template for your one, afterwards add it to `PATTERN_SCAN_ALGORITHMS` in [Program.cs](PatternScanBench/Program.cs) and craete a pull request.
