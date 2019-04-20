@@ -18,7 +18,7 @@ namespace PatternScanBench
         {
             { "NaiveFor", new PatternScanNaiveFor() }, // by uberhalit
             { "BoyerMooreHorspool", new PatternScanBoyerMooreHorspool() }, // by DarthTon
-
+            
             #if (!DEBUG)
             { "NaiveLINQ", new PatternScanNaiveLINQ() }, // by lolp1
             #endif
@@ -99,9 +99,9 @@ namespace PatternScanBench
             foreach (KeyValuePair<string, PatternScanAlgorithm> patternScanAlgorithm in PATTERN_SCAN_ALGORITHMS)
             {
                 PrintInfo(patternScanAlgorithm.Key + " - by " + patternScanAlgorithm.Value.Creator);
-                string message = patternScanAlgorithm.Value.Init(in moduleMemory);
                 bool algoSuccess = true;
                 stopWatch.Restart();
+                string message = patternScanAlgorithm.Value.Init();
                 foreach (MemoryPattern memoryPattern in memoryPatterns)
                 {
                     if (patternScanAlgorithm.Value.FindPattern(in moduleMemory, in memoryPattern.CbPattern, memoryPattern.SzMask) == memoryPattern.ExpectedAddress) continue;
@@ -199,7 +199,7 @@ namespace PatternScanBench
     {
         internal abstract string Creator { get; }
 
-        internal abstract string Init(in byte[] cbMemory);
+        internal abstract string Init();
 
         internal abstract long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask);
     }

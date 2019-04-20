@@ -5,7 +5,7 @@ namespace PatternScanBench.Implementations
         1. Copy this class and replace 'Template' in its name with your implementation name
         2. Replace all 'Template' with your implementation name
         3. Replace all 'author' with your name
-        4. If your implementation needs some initialization done add it to Init()
+        4. If your implementation needs some one-time initialization done add it to Init()
         5. Write your implementation into FindPattern(), must be able to match zeros too
         6. Remove all multi line comment blocks including this one
         * NO DLLs/libraries
@@ -28,11 +28,11 @@ namespace PatternScanBench.Implementations
         /// </summary>
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <returns>An optional string to display next to benchmark results.</returns>
-        internal override string Init(in byte[] cbMemory)
+        internal override string Init()
         {
             /**
              * Do whatever you need here
-             * This won't be benchmarked
+             * Will be called only once (also benchmarked)
              */
             return "";
         }
