@@ -4,7 +4,7 @@ A small and simple benchmark for pattern scan (findpattern) implementations writ
 
 ## Contributing
 
-Feel free to create a pull request with your own patter scan implementation at any time. Use [PatternScanTemplate.cs](PatternScanBench\Implementations/PatternScanTemplate.cs) as a template for your one, afterwards add it to `PATTERN_SCAN_ALGORITHMS` in [Program.cs](PatternScanBench\Program.cs) and craete a pull request.
+Feel free to create a pull request with your own patter scan implementation at any time. Use [PatternScanTemplate.cs](PatternScanBench/Implementations/PatternScanTemplate.cs) as a template for your one, afterwards add it to `PATTERN_SCAN_ALGORITHMS` in [Program.cs](PatternScanBench/Program.cs) and craete a pull request.
 
 ## Prerequisites
 
