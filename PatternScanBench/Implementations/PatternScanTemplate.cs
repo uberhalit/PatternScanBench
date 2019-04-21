@@ -28,11 +28,11 @@ namespace PatternScanBench.Implementations
         /// </summary>
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <returns>An optional string to display next to benchmark results.</returns>
-        internal override string Init()
+        internal override string Init(in byte[] cbMemory)
         {
             /**
              * Do whatever you need here
-             * Will be called only once (also benchmarked)
+             * Will be called only once, also benchmarked
              */
             return "";
         }

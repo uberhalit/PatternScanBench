@@ -101,7 +101,7 @@ namespace PatternScanBench
                 PrintInfo(patternScanAlgorithm.Key + " - by " + patternScanAlgorithm.Value.Creator);
                 bool algoSuccess = true;
                 stopWatch.Restart();
-                string message = patternScanAlgorithm.Value.Init();
+                string message = patternScanAlgorithm.Value.Init(in moduleMemory);
                 foreach (MemoryPattern memoryPattern in memoryPatterns)
                 {
                     if (patternScanAlgorithm.Value.FindPattern(in moduleMemory, in memoryPattern.CbPattern, memoryPattern.SzMask) == memoryPattern.ExpectedAddress) continue;
@@ -199,7 +199,7 @@ namespace PatternScanBench
     {
         internal abstract string Creator { get; }
 
-        internal abstract string Init();
+        internal abstract string Init(in byte[] cbMemory);
 
         internal abstract long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask);
     }
