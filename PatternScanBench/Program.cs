@@ -16,9 +16,11 @@ namespace PatternScanBench
          */
         static readonly Dictionary<string, PatternScanAlgorithm> PATTERN_SCAN_ALGORITHMS = new Dictionary<string, PatternScanAlgorithm>
         {
-            { "NaiveFor", new PatternScanNaiveFor() }, // by uberhalit
+            { "CompareByteArray", new PatternScanCompareByteArray() }, // by fdsasdf
+            { "BytePointerWithJIT", new PatternScanBytePointerWithJIT() }, // by M i c h a e l
             { "BoyerMooreHorspool", new PatternScanBoyerMooreHorspool() }, // by DarthTon
-            
+            { "NaiveFor", new PatternScanNaiveFor() }, // by uberhalit
+
             #if (!DEBUG)
             { "NaiveLINQ", new PatternScanNaiveLINQ() }, // by lolp1
             #endif
