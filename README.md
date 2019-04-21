@@ -2,6 +2,8 @@
 
 A small and simple benchmark for pattern scan (findpattern) implementations written in C# inspired by [this great C++ comparison](https://github.com/learn-more/findpattern-bench).
 
+[![PatternScanBenchmark](https://camo.githubusercontent.com/f33cd799511ab4fcd07b20a805018548805c7fae/68747470733a2f2f692e696d6775722e636f6d2f306d666b6c6d652e706e67)](#)
+
 ## Usage
 
 Copy [memorydump.dat](PatternScanBench/Memorydump/memorydump.dat) into the same folder as the compiled benchmark and run the application.
