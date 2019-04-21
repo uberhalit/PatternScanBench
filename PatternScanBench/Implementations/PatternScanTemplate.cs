@@ -8,12 +8,13 @@ namespace PatternScanBench.Implementations
         4. If your implementation needs some one-time initialization done add it to Init()
         5. Write your implementation into FindPattern(), must be able to match zeros too
         6. Remove all multi line comment blocks including this one
-        * NO DLLs/libraries
-        * NO assembly references outside of default .NET 4.6
+        * NO new DLLs/libraries
+        * NO assembly references outside of default .NET 4.6 (except from Microsoft themselves as part of their "extended dotnetframework")
         * NO changes to build process
         * NO unsafe code
         * has to work on 64 bit Windows 10 1709 and newer
         * has to work on **most** modern AMD64 processors
+        * Dynamic SIMD support is available via embedded System.Numerics
      */
     /// <summary>
     /// Pattern scan implementation 'Template' - by author

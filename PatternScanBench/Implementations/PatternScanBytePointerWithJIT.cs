@@ -6,7 +6,7 @@ namespace PatternScanBench.Implementations
     /// https://www.unknowncheats.me/forum/members/1074564.html
     /// https://github.com/learn-more/findpattern-bench/blob/master/patterns/Michael.h
     ///
-    /// Ported in a way that the JIT uses some pointer arithmetics like in the original version.
+    /// Ported in such a manner that the JIT uses some pointer arithmetics like in the original version.
     /// </summary>
     internal class PatternScanBytePointerWithJIT : PatternScanAlgorithm
     {

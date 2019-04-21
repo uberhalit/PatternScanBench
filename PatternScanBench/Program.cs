@@ -16,6 +16,7 @@ namespace PatternScanBench
          */
         static readonly Dictionary<string, PatternScanAlgorithm> PATTERN_SCAN_ALGORITHMS = new Dictionary<string, PatternScanAlgorithm>
         {
+            { "NaiveSIMD", new PatternScanNaiveSIMD() }, // by uberhalit
             { "CompareByteArray", new PatternScanCompareByteArray() }, // by fdsasdf
             { "BytePointerWithJIT", new PatternScanBytePointerWithJIT() }, // by M i c h a e l
             { "BoyerMooreHorspool", new PatternScanBoyerMooreHorspool() }, // by DarthTon
@@ -48,7 +49,7 @@ namespace PatternScanBench
         /// Uses a full memory dump from blender 2.64a 64bit as a target.
         /// </summary>
         /// <remarks>https://download.blender.org/release/Blender2.64/blender-2.64a-release-windows64.zip</remarks>
-        static void Main(string[] args)
+        internal static void Init(string[] args)
         {
             Console.Title = "Patternscan Benchmark";
             Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -133,7 +134,7 @@ namespace PatternScanBench
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write(prefix);
             Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine("ERROR: " + msg);
+            Console.WriteLine(msg);
         }
 
         /// <summary>
