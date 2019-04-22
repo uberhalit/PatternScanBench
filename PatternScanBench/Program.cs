@@ -16,14 +16,16 @@ namespace PatternScanBench
          */
         static readonly Dictionary<string, PatternScanAlgorithm> PATTERN_SCAN_ALGORITHMS = new Dictionary<string, PatternScanAlgorithm>
         {
+            { "LearnMore", new PatternScanLearnMore() }, // by learn_more
             { "NaiveSIMD", new PatternScanNaiveSIMD() }, // by uberhalit
             { "CompareByteArray", new PatternScanCompareByteArray() }, // by fdsasdf
             { "BytePointerWithJIT", new PatternScanBytePointerWithJIT() }, // by M i c h a e l
             { "BoyerMooreHorspool", new PatternScanBoyerMooreHorspool() }, // by DarthTon
-            { "NaiveFor", new PatternScanNaiveFor() }, // by uberhalit
+            { "Trainer", new PatternScanTrainer() }, // by erfg12
+            { "NaiveFor", new PatternScanNaiveFor() } // by uberhalit
 
             #if (!DEBUG)
-            { "NaiveLINQ", new PatternScanNaiveLINQ() }, // by lolp1
+            //{ "NaiveLINQ", new PatternScanNaiveLINQ() }, // by lolp1
             #endif
         };
 
@@ -37,7 +39,9 @@ namespace PatternScanBench
             { 0xD7CA80, "C6 84 24 ?? ?? ?? ?? ?? C6 44 24 ?? 00" }, // "blender.exe"+D7CA80
             { 0xEE40DB, "48 83 BC 24 ?? ?? ?? ?? ?? 74 ?? 48 8B 84 24 ?? ?? ?? ?? 48 83 E8 ?? 48 89 84 24 ?? ?? ?? ?? EB ?? 48 C7 84 24 ?? ?? ?? ?? ?? ?? ?? ?? 48 8B 84 24 ?? ?? ?? ?? 48 89 84 24 ?? ?? ?? ?? B8 06" }, // "blender.exe"+EE40DB
             { 0x193372F, "4C 8D 1D BA 55 4F 00" }, // "blender.exe"+193372F
-            // DATA SECTION
+            { 0x199B12F, "FF ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5 FF 4C" }, // "blender.exe"+199B12F
+            { 0x199B12D, "83 ?? ?? ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5" }, // "blender.exe"+199B12D
+            //// DATA SECTION
             { 0x1E8CC68 , "48 61 ?? ?? ?? 61 79" }, // "blender.exe"+1E8CC68
             { 0x21A87B8 , "47 4C 53 4C 5F 5F 74 65 63 68 6E 69 71 75 65 5F 5F 70 61 73 73 5F 5F 6D 61 74 65 72 69 61 6C 5F 73 68 69 6E 69 6E 65 73 73" }, // "blender.exe"+21A87B8
             { 0x2572408 , "50 79 45 78 63 5F 52 75 6E 74 69 6D 65 45 72 72 6F 72" } // "blender.exe"+2572408
@@ -46,7 +50,7 @@ namespace PatternScanBench
 
         /// <summary>
         /// Compares C# patterscan implementations.
-        /// Uses a full memory dump from blender 2.64a 64bit as a target.
+        /// Uses a memory dump from main module of blender 2.64a 64bit as a target.
         /// </summary>
         /// <remarks>https://download.blender.org/release/Blender2.64/blender-2.64a-release-windows64.zip</remarks>
         internal static void Init(string[] args)

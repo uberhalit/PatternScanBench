@@ -10,7 +10,7 @@ namespace PatternScanBench.Implementations
     /// Uses SIMD instructions on AVX-supporting processors, the longer the pattern the more efficient this should get.
     /// Requires RyuJIT compiler for hardware acceleration which **should** be enabled by default on newer VS versions.
     /// Ideally a pattern would be a multiple of (xmm0 register size) / 8 so all available space gets used in calculations.
-    /// Can be optimized further as currently the compiler adds a lot of unnecessary array bounds checks.
+    /// Can be optimized further quiet dramatically as currently the compiler adds a lot of unnecessary array bounds checks.
     /// </summary>
     internal class PatternScanNaiveSIMD : PatternScanAlgorithm
     {
@@ -40,7 +40,7 @@ namespace PatternScanBench.Implementations
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
         /// <param name="szMask">A string that determines how pattern should be matched, 'x' is match, '?' acts as wildcard.</param>
-        /// <returns></returns>
+        /// <returns>-1 if pattern is not found.</returns>
         internal override long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
             int maskLength = szMask.Length;
@@ -58,9 +58,9 @@ namespace PatternScanBench.Implementations
                     for (int i = 0; i < patternVectors.Length; i++)
                     {
                         Vector<byte> compareResult = patternVectors[i] - new Vector<byte>(cbMemory, position + 1 + (i * _simdLength));
-                        for (int matchIndex = 0; iMatchTableIndex < matchTableLength; iMatchTableIndex++)
+                        for (; iMatchTableIndex < matchTableLength; iMatchTableIndex++)
                         {
-                            matchIndex = matchTable[iMatchTableIndex];
+                            int matchIndex = matchTable[iMatchTableIndex];
                             if (i > 0) matchIndex -= i * _simdLength;
                             if (matchIndex >= _simdLength)
                                 break;
@@ -88,7 +88,7 @@ namespace PatternScanBench.Implementations
         /// <param name="szMask">The mask.</param>
         /// <param name="maskLength">The length of the mask.</param>
         /// <returns></returns>
-        private ushort[] BuildMatchIndexes(string szMask, int maskLength)
+        private static ushort[] BuildMatchIndexes(string szMask, int maskLength)
         {
             ushort[] fullMatchTable = new ushort[maskLength];
             int matchCount = 0;
@@ -108,7 +108,7 @@ namespace PatternScanBench.Implementations
         /// </summary>
         /// <param name="cbPattern">The pattern.</param>
         /// <returns></returns>
-        private Vector<byte>[] PadPatternToVector(byte[] cbPattern)
+        private static Vector<byte>[] PadPatternToVector(byte[] cbPattern)
         {
             int vectorCount = (int)Math.Ceiling((cbPattern.Length - 1) / (float)_simdLength);
             byte[] paddedPattern = new byte[vectorCount * _simdLength];

@@ -14,25 +14,6 @@ namespace PatternScanBench.Implementations
         internal PatternScanBoyerMooreHorspool() { }
 
         private const byte wildcard = 0xCC;
-        private static uint[] FillShiftTable(byte[] pPattern)
-        {
-            uint idx = 0;
-            uint last = (uint)pPattern.Length - 1;
-
-            // Get last wildcard position
-            for (idx = last; idx > 0 && pPattern[idx] != wildcard; --idx) { }
-            uint diff = last - idx;
-            if (diff == 0)
-                diff = 1;
-
-            // Prepare shift table
-            uint[] badCharSkip = new uint[256];
-            for (idx = 0; idx <= 255; ++idx)
-                badCharSkip[idx] = diff;
-            for (idx = last - diff; idx < last; ++idx)
-                badCharSkip[pPattern[idx]] = last - idx;
-            return badCharSkip;
-        }
 
         /// <summary>
         /// Initializes a new 'PatternScanBoyerMooreHorspool'.
@@ -50,7 +31,7 @@ namespace PatternScanBench.Implementations
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
         /// <param name="szMask">A string that determines how pattern should be matched, 'x' is match, '?' acts as wildcard.</param>
-        /// <returns></returns>
+        /// <returns>-1 if pattern is not found.</returns>
         internal override long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
             int scanEnd = cbMemory.Length - cbPattern.Length;
@@ -84,6 +65,26 @@ namespace PatternScanBench.Implementations
             }
 
             return newPattern;
+        }
+
+        private static uint[] FillShiftTable(byte[] pPattern)
+        {
+            uint idx = 0;
+            uint last = (uint)pPattern.Length - 1;
+
+            // Get last wildcard position
+            for (idx = last; idx > 0 && pPattern[idx] != wildcard; --idx) { }
+            uint diff = last - idx;
+            if (diff == 0)
+                diff = 1;
+
+            // Prepare shift table
+            uint[] badCharSkip = new uint[256];
+            for (idx = 0; idx <= 255; ++idx)
+                badCharSkip[idx] = diff;
+            for (idx = last - diff; idx < last; ++idx)
+                badCharSkip[pPattern[idx]] = last - idx;
+            return badCharSkip;
         }
     }
 }

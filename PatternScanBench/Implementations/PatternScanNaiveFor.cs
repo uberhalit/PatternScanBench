@@ -30,19 +30,18 @@ namespace PatternScanBench.Implementations
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
         /// <param name="szMask">A string that determines how pattern should be matched, 'x' is match, '?' acts as wildcard.</param>
-        /// <returns></returns>
+        /// <returns>-1 if pattern is not found.</returns>
         internal override long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
             long ix;
             int iy;
             bool bFound = false;
-            int patternLength = cbPattern.Length;
-            int dataLength = cbMemory.Length - patternLength;
+            int dataLength = cbMemory.Length - cbPattern.Length;
 
             for (ix = 0; ix < dataLength; ix++)
             {
                 bFound = true;
-                for (iy = 0; iy < patternLength; iy++)
+                for (iy = cbPattern.Length - 1; iy > -1; iy--)
                 {
                     if (szMask[iy] != 'x' || cbPattern[iy] == cbMemory[ix + iy])
                         continue;

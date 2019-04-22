@@ -60,6 +60,8 @@
     <Compile Include="Implementations\PatternScanBytePointerWithJIT.cs" />
     <Compile Include="Implementations\PatternScanCompareByteArray.cs" />
     <Compile Include="Implementations\PatternScanNaiveSIMD.cs" />
+    <Compile Include="Implementations\PatternScanLearnMore.cs" />
+    <Compile Include="Implementations\PatternScanTrainer.cs" />
     <Compile Include="Implementations\PatternScanTemplate.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

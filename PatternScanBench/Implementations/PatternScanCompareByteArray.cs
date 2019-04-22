@@ -5,6 +5,8 @@ namespace PatternScanBench.Implementations
     /// Pattern scan implementation 'CompareByteArray' - by fdsasdf (ported to C# by uberhalit)
     /// https://www.unknowncheats.me/forum/members/645501.html
     /// https://github.com/learn-more/findpattern-bench/blob/master/patterns/fdsasdf.h
+    ///
+    /// Altered refs while porting to improve performance with JIT.
     /// </summary>
     internal class PatternScanCompareByteArray : PatternScanAlgorithm
     {
@@ -12,18 +14,6 @@ namespace PatternScanBench.Implementations
         internal PatternScanCompareByteArray() { }
 
         private const byte wildcard = 0xCC;
-        private bool CompareByteArray(in byte[] Data, ref int iData, in byte[] Signature, int signatureLength)
-        {
-            int iSignature = 0;
-            for (; iSignature < signatureLength; ++iSignature, ++iData)
-            {
-                if (Signature[iSignature] == wildcard)
-                    continue;
-                if (Data[iData] != Signature[iSignature])
-                    return false;
-            }
-            return true;
-        }
 
         /// <summary>
         /// Initializes a new 'PatternScanCompareByteArray'.
@@ -41,7 +31,7 @@ namespace PatternScanBench.Implementations
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
         /// <param name="szMask">A string that determines how pattern should be matched, 'x' is match, '?' acts as wildcard.</param>
-        /// <returns></returns>
+        /// <returns>-1 if pattern is not found.</returns>
         internal override long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
             byte First = cbPattern[0];
@@ -55,8 +45,8 @@ namespace PatternScanBench.Implementations
             {
                 if (cbMemory[BaseAddress] != First) 
                     continue;
-                if (CompareByteArray(in cbMemory, ref BaseAddress, in newPattern, signatureLength))
-                    return BaseAddress - cbPattern.Length;
+                if (CompareByteArray(in cbMemory, BaseAddress, in newPattern, signatureLength))
+                    return BaseAddress;
             }
 
             return -1;
@@ -72,6 +62,19 @@ namespace PatternScanBench.Implementations
             }
 
             return newPattern;
+        }
+
+        private bool CompareByteArray(in byte[] Data, int iData, in byte[] Signature, int signatureLength)
+        {
+            int iSignature = 0;
+            for (; iSignature < signatureLength; ++iSignature, ++iData)
+            {
+                if (Signature[iSignature] == wildcard)
+                    continue;
+                if (Data[iData] != Signature[iSignature])
+                    return false;
+            }
+            return true;
         }
     }
 }
