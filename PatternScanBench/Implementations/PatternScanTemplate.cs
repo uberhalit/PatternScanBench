@@ -12,9 +12,9 @@ namespace PatternScanBench.Implementations
         * NO assembly references outside of default .NET 4.6 (except from Microsoft themselves as part of their "extended dotnetframework")
         * NO changes to build process
         * NO unsafe code
-        * has to work on 64 bit Windows 10 1709 and newer
+        * has to work on 64 bit Windows 10
         * has to work on **most** modern AMD64 processors
-        * Dynamic SIMD support is available via embedded System.Numerics
+        * Dynamic SIMD support is available through embedded Microsoft's System.Numerics.Vector
      */
     /// <summary>
     /// Pattern scan implementation 'Template' - by author

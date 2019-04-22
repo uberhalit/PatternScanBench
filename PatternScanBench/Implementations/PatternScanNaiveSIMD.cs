@@ -9,7 +9,7 @@ namespace PatternScanBench.Implementations
     /// 
     /// Uses SIMD instructions on AVX-supporting processors, the longer the pattern the more efficient this should get.
     /// Requires RyuJIT compiler for hardware acceleration which **should** be enabled by default on newer VS versions.
-    /// Ideally a pattern would be a multiple of (xmm0 register size) * 8 so all available space gets used in calculations.
+    /// Ideally a pattern would be a multiple of (xmm0 register size) / 8 so all available space gets used in calculations.
     /// Can be optimized further as currently the compiler adds a lot of unnecessary array bounds checks.
     /// </summary>
     internal class PatternScanNaiveSIMD : PatternScanAlgorithm

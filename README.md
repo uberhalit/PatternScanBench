@@ -15,7 +15,7 @@ Feel free to create a pull request with your own patter scan implementation at a
 ## Prerequisites
 
 * .NET Framework 4.6
-* Windows 10 64bit 1709 or newer
+* Windows 10 64bit
 
 ## Building
 
