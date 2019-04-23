@@ -26,6 +26,7 @@ namespace PatternScanBench.Implementations
         /// <returns>An optional string to display next to benchmark results.</returns>
         internal override string Init(in byte[] cbMemory)
         {
+            Vector<byte> _dummy = new Vector<byte>(1); // use to pre-load dependency if GC has over-optimized us away already...
             JitVersion jitVersion = new JitVersionInfo().GetJitVersion();
             if (jitVersion == JitVersion.Unknown)
                 return "SIMD support not determined";

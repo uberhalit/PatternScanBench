@@ -15,7 +15,7 @@ namespace PatternScanBench.Implementations
         * has to work on 64 bit Windows 10
         * has to work on **most** modern AMD64 processors
         * don't reuse functions from other implementations, keep this class self-contained
-        * Dynamic SIMD support is available through embedded Microsoft's System.Numerics.Vectors
+        * Dynamic SIMD support is available through Microsoft's System.Numerics.Vectors (can be embedded)
      */
     /// <summary>
     /// Pattern scan implementation 'Template' - by author

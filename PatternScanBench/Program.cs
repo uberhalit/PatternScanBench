@@ -17,17 +17,18 @@ namespace PatternScanBench
         static readonly Dictionary<string, PatternScanAlgorithm> PATTERN_SCAN_ALGORITHMS = new Dictionary<string, PatternScanAlgorithm>
         {
             { "LearnMore", new PatternScanLearnMore() }, // by learn_more
+            { "Trainer", new PatternScanTrainer() }, // by erfg12
             { "NaiveSIMD", new PatternScanNaiveSIMD() }, // by uberhalit
             { "CompareByteArray", new PatternScanCompareByteArray() }, // by fdsasdf
             { "BytePointerWithJIT", new PatternScanBytePointerWithJIT() }, // by M i c h a e l
             { "BoyerMooreHorspool", new PatternScanBoyerMooreHorspool() }, // by DarthTon
-            { "Trainer", new PatternScanTrainer() }, // by erfg12
-            { "NaiveFor", new PatternScanNaiveFor() } // by uberhalit
+            { "NaiveFor", new PatternScanNaiveFor() }, // by uberhalit
 
             #if (!DEBUG)
             //{ "NaiveLINQ", new PatternScanNaiveLINQ() }, // by lolp1
             #endif
         };
+        private const int ITERATIONS = 10;
 
         private const string TARGET_HASH = "2D74CAE219085257C97AE14B72E5F0E773D243E0";
         static readonly Dictionary<long, string> TARGET_PATTERNS = new Dictionary<long, string>
@@ -41,7 +42,7 @@ namespace PatternScanBench
             { 0x193372F, "4C 8D 1D BA 55 4F 00" }, // "blender.exe"+193372F
             { 0x199B12F, "FF ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5 FF 4C" }, // "blender.exe"+199B12F
             { 0x199B12D, "83 ?? ?? ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5" }, // "blender.exe"+199B12D
-            //// DATA SECTION
+            // DATA SECTION
             { 0x1E8CC68 , "48 61 ?? ?? ?? 61 79" }, // "blender.exe"+1E8CC68
             { 0x21A87B8 , "47 4C 53 4C 5F 5F 74 65 63 68 6E 69 71 75 65 5F 5F 70 61 73 73 5F 5F 6D 61 74 65 72 69 61 6C 5F 73 68 69 6E 69 6E 65 73 73" }, // "blender.exe"+21A87B8
             { 0x2572408 , "50 79 45 78 63 5F 52 75 6E 74 69 6D 65 45 72 72 6F 72" } // "blender.exe"+2572408
@@ -53,7 +54,7 @@ namespace PatternScanBench
         /// Uses a memory dump from main module of blender 2.64a 64bit as a target.
         /// </summary>
         /// <remarks>https://download.blender.org/release/Blender2.64/blender-2.64a-release-windows64.zip</remarks>
-        internal static void Init(string[] args)
+        internal static void Main(string[] args)
         {
             Console.Title = "Patternscan Benchmark";
             Console.ForegroundColor = ConsoleColor.DarkYellow;
@@ -67,6 +68,8 @@ namespace PatternScanBench
             Console.WriteLine("            - C# version -");
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Gray;
+
+            PrintInfo(string.Format("{0} iterations | {1} patterns", ITERATIONS, TARGET_PATTERNS.Count));
             Console.Write("To start press ENTER...");
             Console.ReadLine();
             Console.WriteLine("");
@@ -92,6 +95,7 @@ namespace PatternScanBench
                 if (!sha1.Equals(TARGET_HASH, StringComparison.OrdinalIgnoreCase))
                     throw new BadImageFormatException("Memory dump corrupted");
             }
+            GC.KeepAlive(moduleMemory);
 
             // generate byte patterns and masks from string patterns
             List<MemoryPattern> memoryPatterns = new List<MemoryPattern>();
@@ -100,26 +104,39 @@ namespace PatternScanBench
                 MemoryPattern memoryPattern = new MemoryPattern(entry.Key, entry.Value);
                 memoryPatterns.Add(memoryPattern);
             }
+            GC.KeepAlive(memoryPatterns);
 
             // bench all algorithms
             Stopwatch stopWatch = new Stopwatch();
             foreach (KeyValuePair<string, PatternScanAlgorithm> patternScanAlgorithm in PATTERN_SCAN_ALGORITHMS)
             {
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
                 PrintInfo(patternScanAlgorithm.Key + " - by " + patternScanAlgorithm.Value.Creator);
+                long[] results = new long[ITERATIONS];
+                long lastRun = 0;
                 bool algoSuccess = true;
                 stopWatch.Restart();
                 string message = patternScanAlgorithm.Value.Init(in moduleMemory);
-                foreach (MemoryPattern memoryPattern in memoryPatterns)
+                for (int run = 0; run < ITERATIONS; run++)
                 {
-                    if (patternScanAlgorithm.Value.FindPattern(in moduleMemory, in memoryPattern.CbPattern, memoryPattern.SzMask) == memoryPattern.ExpectedAddress) continue;
-                    algoSuccess = false;
-                    break;
+                    if (!stopWatch.IsRunning)
+                        stopWatch.Restart();
+                    foreach (MemoryPattern memoryPattern in memoryPatterns)
+                    {
+                        if (patternScanAlgorithm.Value.FindPattern(in moduleMemory, in memoryPattern.CbPattern, memoryPattern.SzMask) == memoryPattern.ExpectedAddress) continue;
+                        algoSuccess = false;
+                        break;
+                    }
+                    stopWatch.Stop();
+                    if (!algoSuccess)
+                        break;
+                    results[run] = stopWatch.ElapsedMilliseconds;
                 }
-                stopWatch.Stop();
+
                 if (!algoSuccess)
-                    PrintError("failed..." + (message != "" ? " (" + message + ")" : ""), 1);
+                    PrintError("failed..." + (message != "" ? " (" + message + ")" : ""));
                 else
-                    PrintResult(stopWatch.ElapsedMilliseconds + "ms" + (message != "" ? " (" + message + ")" : ""), 1);
+                    PrintResults(results, message);
             }
 
             Console.WriteLine("");
@@ -145,27 +162,34 @@ namespace PatternScanBench
         /// Prints an info message.
         /// </summary>
         /// <param name="msg">The info.</param>
-        /// <param name="tabStops">Number of tab stops.</param>
-        internal static void PrintInfo(string msg, int tabStops = 0)
+        internal static void PrintInfo(string msg)
         {
-            string prefix = string.Concat(Enumerable.Repeat("\t", tabStops)) + "[+] ";
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write(prefix);
+            Console.Write("[+] ");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(msg);
         }
-
+        
         /// <summary>
-        /// Prints an info message.
+        /// Pretty prints a benchmark result.
         /// </summary>
-        /// <param name="msg">The info.</param>
-        /// <param name="tabStops">Number of tab stops.</param>
-        internal static void PrintResult(string msg, int tabStops = 0)
+        /// <param name="results">An array of timings.</param>
+        /// <param name="msg">An optional message.</param>
+        internal static void PrintResults(long[] results, string msg = "")
         {
+            Console.Write("\t");
+            //Console.Write("{0} | ", (int)results.Min());
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            string prefix = string.Concat(Enumerable.Repeat("\t", tabStops));
-            Console.WriteLine(prefix + msg);
+            Console.Write("{0} ms", (int)results.Average());
             Console.ForegroundColor = ConsoleColor.Gray;
+            //Console.Write(" | {0}", (int)results.Max());
+            if (msg != "")
+            {
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.Write(" (" + msg + ")");
+                Console.ForegroundColor = ConsoleColor.Gray;
+            } 
+            Console.WriteLine();
         }
     }
 

@@ -1,8 +1,8 @@
 # PatternScanBenchmark
 
-A small and simple benchmark for pattern scan (findpattern) implementations written in C# inspired by [this great C++ comparison](https://github.com/learn-more/findpattern-bench). Aimed to compare real-world scanning performance without any frills. Real memory dump, every pattern gets scanned just once so that JIT isn't silently optimizing some implementations between runs.
+A small and simple benchmark for pattern scan (findpattern) implementations written in C# inspired by [this great C++ comparison](https://github.com/learn-more/findpattern-bench). Aimed to compare real-world scanning performance without any frills.
 
-[![PatternScanBenchmark](https://camo.githubusercontent.com/3172104a0354659f913dbcb47271fddf9b19a85e/68747470733a2f2f692e696d6775722e636f6d2f6143706b7048442e706e67)](#)
+[![PatternScanBenchmark](https://camo.githubusercontent.com/b9e0518be0a1615d593dbc06300c6d6517ac862b/68747470733a2f2f692e696d6775722e636f6d2f483077615732772e706e67)](#)
 
 ## Usage
 
