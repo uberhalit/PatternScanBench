@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Implementations\PatternScanALittleBitNaiveFor.cs" />
     <Compile Include="Implementations\PatternScanNaiveFor.cs" />
     <Compile Include="Implementations\PatternScanNaiveLINQ.cs" />
     <Compile Include="Implementations\PatternScanBoyerMooreHorspool.cs" />
