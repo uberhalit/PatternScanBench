@@ -36,8 +36,8 @@ namespace PatternScanBench.Implementations
             long ix;
             int iy;
 
-            List<byte> ls = new List<byte>();
-            List<int> ini = new List<int>();
+            List<byte> not0PatternBytesList = new List<byte>();
+            List<int> not0PatternBytesIndexIndexList = new List<int>();
 
             int dataLength = cbMemory.Length - cbPattern.Length;
 
@@ -45,33 +45,31 @@ namespace PatternScanBench.Implementations
             {
                 if (szMask[iy] == 'x')
                 {
-
-                    ls.Add(cbPattern[iy]);
-                    ini.Add(iy);
+                    not0PatternBytesList.Add(cbPattern[iy]);
+                    not0PatternBytesIndexIndexList.Add(iy);
                 }
             }
 
-            byte[] arr = ls.ToArray();
-            byte[] arr1 = new byte[arr.Length];
+            byte[] not0PatternBytesArray = not0PatternBytesList.ToArray();
+            int not0PatternBytesL = not0PatternBytesArray.Length;
+            int[] not0PatternBytesIndexArray = not0PatternBytesIndexIndexList.ToArray();
 
             for (ix = 0; ix < dataLength; ix++)
             {
-                if (arr[arr.Length - 1] == cbMemory[ix])
+                if (not0PatternBytesArray[not0PatternBytesL - 1] != cbMemory[ix]) continue;
+                bool check = true;
+
+                for (iy = not0PatternBytesArray.Length - 1; iy > -1; iy--)
                 {
-                    bool check = true;
+                    if (not0PatternBytesArray[iy] == cbMemory[ix + not0PatternBytesIndexArray[iy]])
+                        continue;
+                    check = false;
+                    break;
+                }
 
-                    for (iy = arr.Length - 1; iy > -1; iy--)
-                    {
-                        if (arr[iy] == cbMemory[ix + ini[iy]])
-                            continue;
-                        check = false;
-                        break;
-                    }
-
-                    if (check)
-                    {
-                        return ix;
-                    }
+                if (check)
+                {
+                    return ix;
                 }
             }
 
