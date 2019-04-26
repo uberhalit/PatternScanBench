@@ -16,6 +16,7 @@ namespace PatternScanBench
          */
         static readonly Dictionary<string, PatternScanAlgorithm> PATTERN_SCAN_ALGORITHMS = new Dictionary<string, PatternScanAlgorithm>
         {
+            { "ALittleBitNaiveFor", new PatternScanALittleBitNaiveFor() }, // by DI20ID
             { "LearnMore", new PatternScanLearnMore() }, // by learn_more
             { "Trainer", new PatternScanTrainer() }, // by erfg12
             { "NaiveSIMD", new PatternScanNaiveSIMD() }, // by uberhalit
