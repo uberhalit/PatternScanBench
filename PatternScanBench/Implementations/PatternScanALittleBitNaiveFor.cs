@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
 namespace PatternScanBench.Implementations
-{
+{ 
     /// <summary>
     /// Pattern scan implementation 'ALittleBitNaiveFor' - by DI20ID
     /// https://github.com/DI20ID
