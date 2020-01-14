@@ -24,6 +24,7 @@ namespace PatternScanBench
             { "BytePointerWithJIT", new PatternScanBytePointerWithJIT() }, // by M i c h a e l
             { "BoyerMooreHorspool", new PatternScanBoyerMooreHorspool() }, // by DarthTon
             { "NaiveFor", new PatternScanNaiveFor() }, // by uberhalit
+            { "ReloadedSigScan", new PatternScanReloadedSigscan() }, // Sewer56
 
             #if (!DEBUG)
             //{ "NaiveLINQ", new PatternScanNaiveLINQ() }, // by lolp1
