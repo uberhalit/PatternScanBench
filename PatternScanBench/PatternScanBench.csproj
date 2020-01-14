@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
     <AssemblyTitle>PatternScanBench</AssemblyTitle>
     <Company>uberhalit</Company>
     <Product>PatternScanBench</Product>
