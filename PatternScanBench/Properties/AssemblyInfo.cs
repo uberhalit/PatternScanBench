@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("uberhalit")]
 [assembly: AssemblyProduct("PatternScanBench")]
-[assembly: AssemblyCopyright("Copyright © uberhalit 2019")]
+[assembly: AssemblyCopyright("Copyright © uberhalit 2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

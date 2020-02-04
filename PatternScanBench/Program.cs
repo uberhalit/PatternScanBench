@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using PatternScanBench.Implementations;
 
 namespace PatternScanBench
@@ -16,13 +17,13 @@ namespace PatternScanBench
          */
         static readonly Dictionary<string, PatternScanAlgorithm> PATTERN_SCAN_ALGORITHMS = new Dictionary<string, PatternScanAlgorithm>
         {
-            { "ALittleBitNaiveFor", new PatternScanALittleBitNaiveFor() }, // by DI20ID
             { "LearnMore", new PatternScanLearnMore() }, // by learn_more
-            { "Trainer", new PatternScanTrainer() }, // by erfg12
-            { "NaiveSIMD", new PatternScanNaiveSIMD() }, // by uberhalit
+            { "memory.dll", new PatternScanMemoryDLL() }, // by erfg12
             { "CompareByteArray", new PatternScanCompareByteArray() }, // by fdsasdf
             { "BytePointerWithJIT", new PatternScanBytePointerWithJIT() }, // by M i c h a e l
             { "BoyerMooreHorspool", new PatternScanBoyerMooreHorspool() }, // by DarthTon
+            { "ALittleBitNaiveFor", new PatternScanALittleBitNaiveFor() }, // by DI20ID
+            { "NaiveSIMD", new PatternScanNaiveSIMD() }, // by uberhalit
             { "NaiveFor", new PatternScanNaiveFor() }, // by uberhalit
 
             #if (!DEBUG)
@@ -70,7 +71,7 @@ namespace PatternScanBench
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Gray;
 
-            PrintInfo(string.Format("{0} iterations | {1} patterns", ITERATIONS, TARGET_PATTERNS.Count));
+            PrintInfo(string.Format("{0} iterations | {1} patterns | {2} implementations", ITERATIONS, TARGET_PATTERNS.Count, PATTERN_SCAN_ALGORITHMS.Count));
             Console.Write("To start press ENTER...");
             Console.ReadLine();
             Console.WriteLine("");
@@ -107,42 +108,72 @@ namespace PatternScanBench
             }
             GC.KeepAlive(memoryPatterns);
 
+            GC.KeepAlive(PATTERN_SCAN_ALGORITHMS);
+
             // bench all algorithms
-            Stopwatch stopWatch = new Stopwatch();
             foreach (KeyValuePair<string, PatternScanAlgorithm> patternScanAlgorithm in PATTERN_SCAN_ALGORITHMS)
             {
-                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true);
                 PrintInfo(patternScanAlgorithm.Key + " - by " + patternScanAlgorithm.Value.Creator);
-                long[] results = new long[ITERATIONS];
-                long lastRun = 0;
-                bool algoSuccess = true;
-                stopWatch.Restart();
-                string message = patternScanAlgorithm.Value.Init(in moduleMemory);
-                for (int run = 0; run < ITERATIONS; run++)
-                {
-                    if (!stopWatch.IsRunning)
-                        stopWatch.Restart();
-                    foreach (MemoryPattern memoryPattern in memoryPatterns)
-                    {
-                        if (patternScanAlgorithm.Value.FindPattern(in moduleMemory, in memoryPattern.CbPattern, memoryPattern.SzMask) == memoryPattern.ExpectedAddress) continue;
-                        algoSuccess = false;
-                        break;
-                    }
-                    stopWatch.Stop();
-                    if (!algoSuccess)
-                        break;
-                    results[run] = stopWatch.ElapsedMilliseconds;
-                }
-
-                if (!algoSuccess)
-                    PrintError("failed..." + (message != "" ? " (" + message + ")" : ""));
+                Task<BenchmarkResult> benchMark = RunBenchmark(patternScanAlgorithm, memoryPatterns, moduleMemory);
+                if (!benchMark.Wait(25000))
+                    PrintError("timeout...");
+                else if (!benchMark.Result.success)
+                    PrintError("failed..." + (benchMark.Result.message != "" ? " (" + benchMark.Result.message + ")" : ""));
                 else
-                    PrintResults(results, message);
+                    PrintResults(benchMark.Result.timings, benchMark.Result.message);
             }
 
             Console.WriteLine("");
             Console.WriteLine("finished...");
             Console.ReadLine();
+        }
+
+        /// <summary>
+        /// Run a pattern scan benchmark.
+        /// </summary>
+        /// <param name="patternScanAlgorithm">The PatternScanAlgorithm to test.</param>
+        /// <param name="memoryPatterns">A list of MemoryPatterns to look for.</param>
+        /// <param name="moduleMemory">The memory to scan for the patterns.</param>
+        /// <returns>A benchmark result.</returns>
+        internal static async Task<BenchmarkResult> RunBenchmark(KeyValuePair<string, PatternScanAlgorithm> patternScanAlgorithm, List<MemoryPattern> memoryPatterns, byte[] moduleMemory)
+        {
+            await Task.Delay(100);  // give thread some time to initialize
+            BenchmarkResult benchmarkResult = new BenchmarkResult
+            {
+                success = false,
+                timings = new long[ITERATIONS]
+            };
+            bool algoSuccess = true;
+
+            Stopwatch stopWatch = new Stopwatch();
+            GC.KeepAlive(stopWatch);
+            stopWatch.Start();
+            benchmarkResult.message = patternScanAlgorithm.Value.Init(in moduleMemory);
+            stopWatch.Stop();
+            for (int run = 0; run < ITERATIONS; run++)
+            {
+                GC.Collect();
+                if (GC.WaitForFullGCComplete() != GCNotificationStatus.Succeeded)
+                    await Task.Delay(100);
+                GC.WaitForPendingFinalizers();
+                if (run == 0)
+                    stopWatch.Start();
+                else
+                    stopWatch.Restart();
+                foreach (MemoryPattern memoryPattern in memoryPatterns)
+                {
+                    if (patternScanAlgorithm.Value.FindPattern(in moduleMemory, in memoryPattern.CbPattern, memoryPattern.SzMask) == memoryPattern.ExpectedAddress) continue;
+                    algoSuccess = false;
+                    break;
+                }
+                stopWatch.Stop();
+                if (!algoSuccess)
+                    return benchmarkResult;
+                benchmarkResult.timings[run] = (long)(stopWatch.ElapsedTicks / (double)Stopwatch.Frequency * 1000.0);
+            }
+
+            benchmarkResult.success = true;
+            return benchmarkResult;
         }
 
         /// <summary>
@@ -191,6 +222,16 @@ namespace PatternScanBench
                 Console.ForegroundColor = ConsoleColor.Gray;
             } 
             Console.WriteLine();
+        }
+
+        /// <summary>
+        /// A benchmark result.
+        /// </summary>
+        internal struct BenchmarkResult
+        {
+            internal long[] timings;
+            internal string message;
+            internal bool success;
         }
     }
 

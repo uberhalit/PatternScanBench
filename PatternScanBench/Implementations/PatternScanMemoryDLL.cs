@@ -2,17 +2,17 @@
 namespace PatternScanBench.Implementations
 {
     /// <summary>
-    /// Pattern scan implementation 'Trainer' - by erfg12
+    /// Pattern scan implementation 'MemoryDLL' - by erfg12
     /// https://github.com/erfg12
     /// https://github.com/erfg12/memory.dll/blob/master/Memory/memory.cs
     /// </summary>
-    internal class PatternScanTrainer : PatternScanAlgorithm
+    internal class PatternScanMemoryDLL : PatternScanAlgorithm
     {
         internal override string Creator => "erfg12";
-        internal PatternScanTrainer() { }
+        internal PatternScanMemoryDLL() { }
 
         /// <summary>
-        /// Initializes a new 'PatternScanTrainer'.
+        /// Initializes a new 'PatternScanMemoryDLL'.
         /// </summary>
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <returns>An optional string to display next to benchmark results.</returns>
@@ -22,7 +22,7 @@ namespace PatternScanBench.Implementations
         }
 
         /// <summary>
-        /// Returns address of pattern using 'Trainer' implementation by erfg12. Can match 0.
+        /// Returns address of pattern using 'MemoryDLL' implementation by erfg12. Can match 0.
         /// </summary>
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>

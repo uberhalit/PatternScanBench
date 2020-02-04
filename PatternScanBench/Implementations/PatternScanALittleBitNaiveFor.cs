@@ -37,7 +37,7 @@ namespace PatternScanBench.Implementations
             int iy;
 
             List<byte> not0PatternBytesList = new List<byte>();
-            List<int> not0PatternBytesIndexIndexList = new List<int>();
+            List<int> not0PatternBytesIndexList = new List<int>();
 
             int dataLength = cbMemory.Length - cbPattern.Length;
 
@@ -46,13 +46,13 @@ namespace PatternScanBench.Implementations
                 if (szMask[iy] == 'x')
                 {
                     not0PatternBytesList.Add(cbPattern[iy]);
-                    not0PatternBytesIndexIndexList.Add(iy);
+                    not0PatternBytesIndexList.Add(iy);
                 }
             }
 
             byte[] not0PatternBytesArray = not0PatternBytesList.ToArray();
             int not0PatternBytesL = not0PatternBytesArray.Length;
-            int[] not0PatternBytesIndexArray = not0PatternBytesIndexIndexList.ToArray();
+            int[] not0PatternBytesIndexArray = not0PatternBytesIndexList.ToArray();
 
             for (ix = 0; ix < dataLength; ix++)
             {

@@ -44,40 +44,46 @@ namespace PatternScanBench.Implementations
         /// <returns>-1 if pattern is not found.</returns>
         internal override long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
+            byte[] cxMemory = cbMemory;
+            byte[] cxPattern = cbPattern;
             int maskLength = szMask.Length;
             ushort[] matchTable = BuildMatchIndexes(szMask, maskLength);
             int matchTableLength = matchTable.Length;
-            Vector<byte>[] patternVectors = PadPatternToVector(cbPattern);
+            Vector<byte>[] patternVectors = PadPatternToVector(cxPattern);
 
-            int searchLength = cbMemory.Length - (_simdLength > cbPattern.Length ? _simdLength : cbPattern.Length);
+            int searchLength = cxMemory.Length - (_simdLength > cxPattern.Length ? _simdLength : cxPattern.Length);
             for (int position = 0; position < searchLength; position++)
             {
-                if (cbMemory[position] == cbPattern[0])
+                if (cxPattern[0] != cxMemory[position])
                 {
-                    int iMatchTableIndex = 0;
-                    bool found = true;
-                    for (int i = 0; i < patternVectors.Length; i++)
-                    {
-                        Vector<byte> compareResult = patternVectors[i] - new Vector<byte>(cbMemory, position + 1 + (i * _simdLength));
-                        for (; iMatchTableIndex < matchTableLength; iMatchTableIndex++)
-                        {
-                            int matchIndex = matchTable[iMatchTableIndex];
-                            if (i > 0) matchIndex -= i * _simdLength;
-                            if (matchIndex >= _simdLength)
-                                break;
-                            if (compareResult[matchIndex] == 0x00)
-                                continue;
-                            found = false;
-                            break;
-                        }
+                    if (cxPattern[0] != cxMemory[position+1])
+                        position++;
+                    continue;
+                }
 
-                        if (!found)
+                int iMatchTableIndex = 0;
+                bool found = true;
+                for (int i = 0; i < patternVectors.Length; i++)
+                {
+                    Vector<byte> compareResult = patternVectors[i] - new Vector<byte>(cxMemory, position + 1 + (i * _simdLength));
+                    for (; iMatchTableIndex < matchTableLength; iMatchTableIndex++)
+                    {
+                        int matchIndex = matchTable[iMatchTableIndex];
+                        if (i > 0) matchIndex -= i * _simdLength;
+                        if (matchIndex >= _simdLength)
                             break;
+                        if (compareResult[matchIndex] == 0x00)
+                            continue;
+                        found = false;
+                        break;
                     }
 
-                    if (found)
-                        return position;
+                    if (!found)
+                        break;
                 }
+
+                if (found)
+                    return position;
             }
 
             return -1;

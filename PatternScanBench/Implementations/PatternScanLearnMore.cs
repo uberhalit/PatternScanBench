@@ -65,5 +65,17 @@ namespace PatternScanBench.Implementations
 
             return -1;
         }
+
+        private static bool IsMatch(in byte[] addr, in byte[] pat, in byte[] msk)
+        {
+            uint n = 0;
+            while (addr[n] == pat[n] || msk[n] == (byte)'?') {
+                if (n >= msk.Length) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     }
 }
