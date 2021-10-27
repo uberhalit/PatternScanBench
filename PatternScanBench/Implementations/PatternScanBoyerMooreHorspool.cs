@@ -8,22 +8,12 @@ namespace PatternScanBench.Implementations
     /// 
     /// Boyer-Moore-Horspool with wildcards implementation
     /// </summary>
-    internal class PatternScanBoyerMooreHorspool : PatternScanAlgorithm
+    internal class PatternScanBoyerMooreHorspool
     {
-        internal override string Creator => "DarthTon";
-        internal PatternScanBoyerMooreHorspool() { }
-
-        private const byte wildcard = 0xCC;
-
         /// <summary>
-        /// Initializes a new 'PatternScanBoyerMooreHorspool'.
+        /// Represents a '?' in a byte pattern, can not be matched...
         /// </summary>
-        /// <param name="cbMemory">The byte array to scan.</param>
-        /// <returns>An optional string to display next to benchmark results.</returns>
-        internal override string Init(in byte[] cbMemory)
-        {
-            return "";
-        }
+        private const byte wildcard = 0xCC;
 
         /// <summary>
         /// Returns address of pattern using 'BoyerMooreHorspool' implementation by DarthTon. Can match 0.
@@ -32,13 +22,13 @@ namespace PatternScanBench.Implementations
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
         /// <param name="szMask">A string that determines how pattern should be matched, 'x' is match, '?' acts as wildcard.</param>
         /// <returns>-1 if pattern is not found.</returns>
-        internal override long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
+        internal static long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
             int scanEnd = cbMemory.Length - cbPattern.Length;
             int last = cbPattern.Length - 1;
 
-            byte[] newPattern = GenerateWildcardPattern(cbPattern, szMask);
-            uint[] badCharSkip = FillShiftTable(newPattern);
+            byte[] newPattern = GenerateWildcardPattern(in cbPattern, szMask);
+            uint[] badCharSkip = FillShiftTable(ref newPattern);
 
             // Search
             uint pScanPos = 0;
@@ -55,7 +45,7 @@ namespace PatternScanBench.Implementations
             return -1;
         }
 
-        private byte[] GenerateWildcardPattern(byte[] cbPattern, string szMask)
+        private static byte[] GenerateWildcardPattern(in byte[] cbPattern, string szMask)
         {
             byte[] newPattern = new byte[cbPattern.Length];
             for (int i = 0; i < szMask.Length; i++)
@@ -67,7 +57,7 @@ namespace PatternScanBench.Implementations
             return newPattern;
         }
 
-        private static uint[] FillShiftTable(byte[] pPattern)
+        private static uint[] FillShiftTable(ref byte[] pPattern)
         {
             uint idx = 0;
             uint last = (uint)pPattern.Length - 1;

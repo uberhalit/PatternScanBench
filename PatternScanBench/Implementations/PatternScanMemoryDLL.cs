@@ -6,21 +6,8 @@ namespace PatternScanBench.Implementations
     /// https://github.com/erfg12
     /// https://github.com/erfg12/memory.dll/blob/master/Memory/memory.cs
     /// </summary>
-    internal class PatternScanMemoryDLL : PatternScanAlgorithm
+    internal class PatternScanMemoryDLL
     {
-        internal override string Creator => "erfg12";
-        internal PatternScanMemoryDLL() { }
-
-        /// <summary>
-        /// Initializes a new 'PatternScanMemoryDLL'.
-        /// </summary>
-        /// <param name="cbMemory">The byte array to scan.</param>
-        /// <returns>An optional string to display next to benchmark results.</returns>
-        internal override string Init(in byte[] cbMemory)
-        {
-            return "";
-        }
-
         /// <summary>
         /// Returns address of pattern using 'MemoryDLL' implementation by erfg12. Can match 0.
         /// </summary>
@@ -28,7 +15,7 @@ namespace PatternScanBench.Implementations
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
         /// <param name="szMask">A string that determines how pattern should be matched, 'x' is match, '?' acts as wildcard.</param>
         /// <returns>-1 if pattern is not found.</returns>
-        internal override long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
+        internal static long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
             int foundIndex = -1;
 

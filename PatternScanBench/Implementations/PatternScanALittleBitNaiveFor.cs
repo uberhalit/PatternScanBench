@@ -6,24 +6,8 @@ namespace PatternScanBench.Implementations
     /// Pattern scan implementation 'ALittleBitNaiveFor' - by DI20ID
     /// https://github.com/DI20ID
     /// </summary>
-    internal class PatternScanALittleBitNaiveFor : PatternScanAlgorithm
+    internal class PatternScanALittleBitNaiveFor
     {
-        /// <summary>
-        /// Authors name.
-        /// </summary>
-        internal override string Creator => "DI20ID";
-        internal PatternScanALittleBitNaiveFor() { }
-
-        /// <summary>
-        /// Initializes a new 'PatternScanTest'.
-        /// </summary>
-        /// <param name="cbMemory">The byte array to scan.</param>
-        /// <returns>An optional string to display next to benchmark results.</returns>
-        internal override string Init(in byte[] cbMemory)
-        {
-            return "";
-        }
-
         /// <summary>
         /// Returns address of pattern using 'ALittleBitNaiveFor' implementation by DI20ID. Can match 0.
         /// </summary>
@@ -31,7 +15,7 @@ namespace PatternScanBench.Implementations
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
         /// <param name="szMask">A string that determines how pattern should be matched, 'x' is match, '?' acts as wildcard.</param>
         /// <returns>-1 if pattern is not found.</returns>
-        internal override long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
+        internal static long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
             long ix;
             int iy;

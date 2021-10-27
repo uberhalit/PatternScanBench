@@ -1,4 +1,7 @@
-﻿
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace PatternScanBench.Implementations
 {
     /// <summary>
@@ -8,22 +11,12 @@ namespace PatternScanBench.Implementations
     ///
     /// Altered refs while porting to improve performance with JIT.
     /// </summary>
-    internal class PatternScanCompareByteArray : PatternScanAlgorithm
+    internal class PatternScanCompareByteArray
     {
-        internal override string Creator => "fdsasdf";
-        internal PatternScanCompareByteArray() { }
-
-        private const byte wildcard = 0xCC;
-
         /// <summary>
-        /// Initializes a new 'PatternScanCompareByteArray'.
+        /// Represents a '?' in a byte pattern, can not be matched...
         /// </summary>
-        /// <param name="cbMemory">The byte array to scan.</param>
-        /// <returns>An optional string to display next to benchmark results.</returns>
-        internal override string Init(in byte[] cbMemory)
-        {
-            return "";
-        }
+        private const byte wildcard = 0xCC;
 
         /// <summary>
         /// Returns address of pattern using 'CompareByteArray' implementation by fdsasdf. Can match 0.
@@ -32,46 +25,48 @@ namespace PatternScanBench.Implementations
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
         /// <param name="szMask">A string that determines how pattern should be matched, 'x' is match, '?' acts as wildcard.</param>
         /// <returns>-1 if pattern is not found.</returns>
-        internal override long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
+        internal static long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
             byte First = cbPattern[0];
+            long iBaseAddress = 0;
             int Max = cbMemory.Length - cbPattern.Length;
-            int BaseAddress = 0;
 
-            byte[] newPattern = GenerateWildcardPattern(cbPattern, szMask);
+            byte[] newPattern = new byte[cbPattern.Length];
+            GenerateWildcardPattern(in cbPattern, ref newPattern, szMask);
             int signatureLength = cbPattern.Length;
 
-            for (; BaseAddress < Max; ++BaseAddress)
+            ref byte BaseAddress = ref cbMemory[0];
+
+            for (; iBaseAddress < Max; ++iBaseAddress, BaseAddress = ref Unsafe.Add(ref BaseAddress, 1))
             {
-                if (cbMemory[BaseAddress] != First) 
+                if (BaseAddress != First) 
                     continue;
-                if (CompareByteArray(in cbMemory, BaseAddress, in newPattern, signatureLength))
-                    return BaseAddress;
+                if (CompareByteArray(ref BaseAddress, ref newPattern, signatureLength))
+                    return iBaseAddress;
             }
 
             return -1;
         }
 
-        private byte[] GenerateWildcardPattern(byte[] cbPattern, string szMask)
+        private static void GenerateWildcardPattern(in byte[] cbPattern, ref byte[] newPattern, string szMask)
         {
-            byte[] newPattern = new byte[cbPattern.Length];
+            Buffer.BlockCopy(cbPattern, 0, newPattern, 0, cbPattern.Length);
             for (int i = 0; i < szMask.Length; i++)
             {
                 if (szMask[i] != 'x') newPattern[i] = wildcard;
-                else newPattern[i] = cbPattern[i];
             }
-
-            return newPattern;
         }
 
-        private bool CompareByteArray(in byte[] Data, int iData, in byte[] Signature, int signatureLength)
+        private static bool CompareByteArray(ref byte Data, ref byte[] newPattern, int signatureLength)
         {
-            int iSignature = 0;
-            for (; iSignature < signatureLength; ++iSignature, ++iData)
+            ref byte Signature = ref Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(newPattern), 1);
+            int iSignature = 1;
+            Data = ref Unsafe.Add(ref Data, 1);
+            for (; iSignature < signatureLength; ++iSignature, Data = ref Unsafe.Add(ref Data, 1), Signature = ref Unsafe.Add(ref Signature, 1))
             {
-                if (Signature[iSignature] == wildcard)
+                if (Signature == wildcard)
                     continue;
-                if (Data[iData] != Signature[iSignature])
+                if (Data != Signature)
                     return false;
             }
             return true;

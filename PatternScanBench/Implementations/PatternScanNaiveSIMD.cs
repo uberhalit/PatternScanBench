@@ -12,9 +12,8 @@ namespace PatternScanBench.Implementations
     /// Ideally a pattern would be a multiple of (xmm0 register size) / 8 so all available space gets used in calculations.
     /// Can be optimized further quiet dramatically as currently the compiler adds a lot of unnecessary array bounds checks.
     /// </summary>
-    internal class PatternScanNaiveSIMD : PatternScanAlgorithm
+    internal class PatternScanNaiveSIMD
     {
-        internal override string Creator => "uberhalit";
         internal PatternScanNaiveSIMD() { }
 
         private static readonly int _simdLength = Vector<byte>.Count;
@@ -24,15 +23,14 @@ namespace PatternScanBench.Implementations
         /// </summary>
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <returns>An optional string to display next to benchmark results.</returns>
-        internal override string Init(in byte[] cbMemory)
+        internal static void Init(in byte[] cbMemory)
         {
-            Vector<byte> _dummy = new Vector<byte>(1); // use to pre-load dependency if GC has over-optimized us away already...
+            Vector<byte> _dummy = new Vector<byte>(1); // used to pre-load dependency if GC has over-optimized us away already...
             JitVersion jitVersion = new JitVersionInfo().GetJitVersion();
             if (jitVersion == JitVersion.Unknown)
-                return "SIMD support not determined";
+                throw new MethodAccessException("SIMD support not determined");
             if (!Vector.IsHardwareAccelerated || jitVersion != JitVersion.RyuJit)
-                return "SIMD not HW accelerated...";
-            return "";
+                throw new NotSupportedException("SIMD not HW accelerated...");
         }
 
         /// <summary>
@@ -42,7 +40,7 @@ namespace PatternScanBench.Implementations
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
         /// <param name="szMask">A string that determines how pattern should be matched, 'x' is match, '?' acts as wildcard.</param>
         /// <returns>-1 if pattern is not found.</returns>
-        internal override long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
+        internal static long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
             byte[] cxMemory = cbMemory;
             byte[] cxPattern = cbPattern;
