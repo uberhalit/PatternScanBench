@@ -45,7 +45,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-
+        
         [Benchmark(Description = "Exodia by mrexodia")]
         public void Exodia()
         {
@@ -56,7 +56,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-
+        
         [Benchmark(Description = "BoyerMooreHorspool by DarthTon")]
         public void BoyerMooreHorspool()
         {
@@ -89,7 +89,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-
+        
         [Benchmark(Description = "LearnMore by learn_more")]
         public void LearnMore()
         {
@@ -135,13 +135,13 @@ namespace PatternScanBench
             }
         }
 
-        [Benchmark(Description = "NaiveSIMD by uberhalit")]
-        public void NaiveSIMD()
+        [Benchmark(Description = "LazySIMD by uberhalit")]
+        public void LazySIMD()
         {
-            PatternScanNaiveSIMD.Init(in CbMemory);
+            PatternScanLazySIMD.Init(in CbMemory);
             foreach (MemoryPattern pattern in MemoryPatterns)
             {
-                long result = PatternScanNaiveSIMD.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                long result = PatternScanLazySIMD.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
                 if (result != pattern.ExpectedAddress)
                     throw new Exception("Pattern not found...");
             }
@@ -215,9 +215,7 @@ namespace PatternScanBench
             { 0x199B12D, "83 ?? ?? ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5" }, // "blender.exe"+199B12D
             { 0x199B12F, "FF ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5 FF 4C" }, // "blender.exe"+199B12F
             // DATA SECTION
-            { 0x1E8CC68 , "48 61 ?? ?? ?? 61 79" }, // "blender.exe"+1E8CC68
-            { 0x21A87B8 , "47 4C 53 4C 5F 5F 74 65 63 68 6E 69 71 75 65 5F 5F 70 61 73 73 5F 5F 6D 61 74 65 72 69 61 6C 5F 73 68 69 6E 69 6E 65 73 73" }, // "blender.exe"+21A87B8
-            { 0x2572408 , "50 79 45 78 63 5F 52 75 6E 74 69 6D 65 45 72 72 6F 72" } // "blender.exe"+2572408
+            { 0x1E8CC68 , "48 61 ?? ?? ?? 61 79" } // "blender.exe"+1E8CC68
         };
 
         #endregion
@@ -289,7 +287,7 @@ namespace PatternScanBench
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Gray;
 
-            PrintInfo("12 patterns | 10 iterations | 10 implementations");
+            PrintInfo("10 patterns | 10 iterations | 10 implementations");
             Console.Write("To start press ENTER...");
             Console.ReadLine();
             Console.Write("Running ");

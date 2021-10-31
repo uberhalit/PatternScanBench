@@ -10,6 +10,14 @@
         <Version>2.0.0</Version>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+	  <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+	  <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<None Include="$(MSBuildThisFileDirectory)\Memorydump\memorydump.dat">
 			<Link>memorydump.dat</Link>
@@ -19,7 +27,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
+	  <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
 	</ItemGroup>
 	
 </Project>
