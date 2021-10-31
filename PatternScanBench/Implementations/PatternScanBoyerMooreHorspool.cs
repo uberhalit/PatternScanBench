@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace PatternScanBench.Implementations
 {
     /// <summary>
@@ -13,7 +14,7 @@ namespace PatternScanBench.Implementations
         /// <summary>
         /// Represents a '?' in a byte pattern, can not be matched...
         /// </summary>
-        private const byte wildcard = 0xCC;
+        private const byte WILDCARD = 0xCC;
 
         /// <summary>
         /// Returns address of pattern using 'BoyerMooreHorspool' implementation by DarthTon. Can match 0.
@@ -27,7 +28,8 @@ namespace PatternScanBench.Implementations
             int scanEnd = cbMemory.Length - cbPattern.Length;
             int last = cbPattern.Length - 1;
 
-            byte[] newPattern = GenerateWildcardPattern(in cbPattern, szMask);
+            byte[] newPattern = new byte[cbPattern.Length];
+            GenerateWildcardPattern(in cbPattern, ref newPattern, szMask);
             uint[] badCharSkip = FillShiftTable(ref newPattern);
 
             // Search
@@ -36,7 +38,7 @@ namespace PatternScanBench.Implementations
             {
                 for (int idx = last; idx >= 0; --idx)
                 {
-                    if (newPattern[idx] != wildcard && cbMemory[idx + pScanPos] != newPattern[idx])
+                    if (newPattern[idx] != WILDCARD && cbMemory[idx + pScanPos] != newPattern[idx])
                         break;
                     if (idx == 0)
                         return pScanPos;
@@ -45,16 +47,12 @@ namespace PatternScanBench.Implementations
             return -1;
         }
 
-        private static byte[] GenerateWildcardPattern(in byte[] cbPattern, string szMask)
+        private static void GenerateWildcardPattern(in byte[] cbPattern, ref byte[] newPattern, string szMask)
         {
-            byte[] newPattern = new byte[cbPattern.Length];
-            for (int i = 0; i < szMask.Length; i++)
-            {
-                if (szMask[i] != 'x') newPattern[i] = wildcard;
-                else newPattern[i] = cbPattern[i];
-            }
-
-            return newPattern;
+            int mskLen = szMask.Length;
+            Buffer.BlockCopy(cbPattern, 0, newPattern, 0, cbPattern.Length);
+            for (int i = 0; i < mskLen; i++)
+                if (szMask[i] != 'x') newPattern[i] = WILDCARD;
         }
 
         private static uint[] FillShiftTable(ref byte[] pPattern)
@@ -63,7 +61,7 @@ namespace PatternScanBench.Implementations
             uint last = (uint)pPattern.Length - 1;
 
             // Get last wildcard position
-            for (idx = last; idx > 0 && pPattern[idx] != wildcard; --idx) { }
+            for (idx = last; idx > 0 && pPattern[idx] != WILDCARD; --idx) { }
             uint diff = last - idx;
             if (diff == 0)
                 diff = 1;

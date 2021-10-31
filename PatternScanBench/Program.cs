@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace PatternScanBench
 {
-    [SimpleJob(RunStrategy.Monitoring, warmupCount: 1, invocationCount: 2, targetCount: 5)]
+    [SimpleJob(RunStrategy.Monitoring, warmupCount: 2, invocationCount: 2, targetCount: 5)]
     public class Benchmark
     {
         /**
@@ -45,7 +45,18 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-        
+
+        [Benchmark(Description = "Exodia by mrexodia")]
+        public void Exodia()
+        {
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanExodia.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
+
         [Benchmark(Description = "BoyerMooreHorspool by DarthTon")]
         public void BoyerMooreHorspool()
         {
@@ -78,7 +89,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-        
+
         [Benchmark(Description = "LearnMore by learn_more")]
         public void LearnMore()
         {
@@ -89,18 +100,19 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-        
-        [Benchmark(Description = "LearnMore v2 by learn_more")]
-        public void LearnMoreV2()
-        {
-            foreach (MemoryPattern pattern in MemoryPatterns)
-            {
-                long result = PatternScanLearnMore.FindPatternV2(in CbMemory, in pattern.CbPattern, pattern.SzMask);
-                if (result != pattern.ExpectedAddress)
-                    throw new Exception("Pattern not found...");
-            }
-        }
-        
+
+        // SLOW
+        //[Benchmark(Description = "LearnMore v2 by learn_more")]
+        //public void LearnMoreV2()
+        //{
+        //    foreach (MemoryPattern pattern in MemoryPatterns)
+        //    {
+        //        long result = PatternScanLearnMore.FindPatternV2(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+        //        if (result != pattern.ExpectedAddress)
+        //            throw new Exception("Pattern not found...");
+        //    }
+        //}
+
         [Benchmark(Description = "MemoryDLL by erfg12")]
         public void MemoryDLL()
         {
@@ -122,7 +134,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-        
+
         [Benchmark(Description = "NaiveSIMD by uberhalit")]
         public void NaiveSIMD()
         {
@@ -130,6 +142,17 @@ namespace PatternScanBench
             foreach (MemoryPattern pattern in MemoryPatterns)
             {
                 long result = PatternScanNaiveSIMD.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
+
+        [Benchmark(Description = "SpanEquals by uberhalit")]
+        public void SpanEquals()
+        {
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanSpanEquals.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
                 if (result != pattern.ExpectedAddress)
                     throw new Exception("Pattern not found...");
             }
@@ -189,8 +212,8 @@ namespace PatternScanBench
             { 0xD7CA80, "C6 84 24 ?? ?? ?? ?? ?? C6 44 24 ?? 00" }, // "blender.exe"+D7CA80
             { 0xEE40DB, "48 83 BC 24 ?? ?? ?? ?? ?? 74 ?? 48 8B 84 24 ?? ?? ?? ?? 48 83 E8 ?? 48 89 84 24 ?? ?? ?? ?? EB ?? 48 C7 84 24 ?? ?? ?? ?? ?? ?? ?? ?? 48 8B 84 24 ?? ?? ?? ?? 48 89 84 24 ?? ?? ?? ?? B8 06" }, // "blender.exe"+EE40DB
             { 0x193372F, "4C 8D 1D BA 55 4F 00" }, // "blender.exe"+193372F
-            { 0x199B12F, "FF ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5 FF 4C" }, // "blender.exe"+199B12F
             { 0x199B12D, "83 ?? ?? ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5" }, // "blender.exe"+199B12D
+            { 0x199B12F, "FF ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5 FF 4C" }, // "blender.exe"+199B12F
             // DATA SECTION
             { 0x1E8CC68 , "48 61 ?? ?? ?? 61 79" }, // "blender.exe"+1E8CC68
             { 0x21A87B8 , "47 4C 53 4C 5F 5F 74 65 63 68 6E 69 71 75 65 5F 5F 70 61 73 73 5F 5F 6D 61 74 65 72 69 61 6C 5F 73 68 69 6E 69 6E 65 73 73" }, // "blender.exe"+21A87B8
@@ -266,7 +289,7 @@ namespace PatternScanBench
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Gray;
 
-            PrintInfo("12 patterns | 10 iterations | 8 implementations");
+            PrintInfo("12 patterns | 10 iterations | 10 implementations");
             Console.Write("To start press ENTER...");
             Console.ReadLine();
             Console.Write("Running ");
@@ -302,9 +325,9 @@ namespace PatternScanBench
             
             Console.WriteLine("");
             Console.WriteLine("finished...");
+            Console.SetCursorPosition(0, 0);
             Console.ReadLine();
         }
-
 
         /// <summary>
         /// Prints an info message.

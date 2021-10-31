@@ -17,7 +17,7 @@ namespace PatternScanBench.Implementations
         /// <summary>
         /// Represents a '?' in a byte pattern, can not be matched...
         /// </summary>
-        private const byte wildcard = 0xCC;
+        private const byte WILDCARD = 0xCC;
 
         /// <summary>
         /// Returns address of pattern using 'LearnMore' implementation by learn_more. Can match 0.
@@ -40,7 +40,7 @@ namespace PatternScanBench.Implementations
 
             for (int iPcur = 0; iPcur < rangeEnd; ++iPcur, pCur = ref Unsafe.Add(ref pCur, 1))
             {
-                if (pCur == pat || pat == wildcard)
+                if (pCur == pat || pat == WILDCARD)
                 {
                     if (iFirstMatch == 0)
                         iFirstMatch = iPcur;
@@ -64,11 +64,10 @@ namespace PatternScanBench.Implementations
 
         private static void GenerateWildcardPattern(in byte[] cbPattern, ref byte[] newPattern, string szMask)
         {
+            int mskLen = szMask.Length;
             Buffer.BlockCopy(cbPattern, 0, newPattern, 0, cbPattern.Length);
-            for (int i = 0; i < szMask.Length; i++)
-            {
-                if (szMask[i] != 'x') newPattern[i] = wildcard;
-            }
+            for (int i = 0; i < mskLen; i++)
+                if (szMask[i] != 'x') newPattern[i] = WILDCARD;
         }
 
         /// <summary>

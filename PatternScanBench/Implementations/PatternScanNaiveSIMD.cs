@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace PatternScanBench.Implementations
 {
@@ -7,16 +11,17 @@ namespace PatternScanBench.Implementations
     /// Pattern scan implementation 'NaiveSIMD' - by uberhalit
     /// https://github.com/uberhalit
     /// 
-    /// Uses SIMD instructions on AVX-supporting processors, the longer the pattern the more efficient this should get.
+    /// Uses SIMD instructions on SSE2-supporting processors, the longer the pattern the more efficient this should get.
     /// Requires RyuJIT compiler for hardware acceleration which **should** be enabled by default on newer VS versions.
     /// Ideally a pattern would be a multiple of (xmm0 register size) / 8 so all available space gets used in calculations.
-    /// Can be optimized further quiet dramatically as currently the compiler adds a lot of unnecessary array bounds checks.
+    /// Can be optimized further as currently the compiler adds a few unnecessary array boundry checks.
     /// </summary>
     internal class PatternScanNaiveSIMD
     {
-        internal PatternScanNaiveSIMD() { }
-
-        private static readonly int _simdLength = Vector<byte>.Count;
+        /// <summary>
+        /// Length of an SSE2 vector in bytes.
+        /// </summary>
+        private const int SIMDLENGTH128 = 16;
 
         /// <summary>
         /// Initializes a new 'PatternScanNaiveSIMD'.
@@ -25,11 +30,8 @@ namespace PatternScanBench.Implementations
         /// <returns>An optional string to display next to benchmark results.</returns>
         internal static void Init(in byte[] cbMemory)
         {
-            Vector<byte> _dummy = new Vector<byte>(1); // used to pre-load dependency if GC has over-optimized us away already...
-            JitVersion jitVersion = new JitVersionInfo().GetJitVersion();
-            if (jitVersion == JitVersion.Unknown)
-                throw new MethodAccessException("SIMD support not determined");
-            if (!Vector.IsHardwareAccelerated || jitVersion != JitVersion.RyuJit)
+            Vector128<byte> tmp = Vector128.Create((byte)0); // used to pre-load dependency if GC has over-optimized us out of existence already...
+            if (!Vector.IsHardwareAccelerated || !Sse2.IsSupported)
                 throw new NotSupportedException("SIMD not HW accelerated...");
         }
 
@@ -42,35 +44,41 @@ namespace PatternScanBench.Implementations
         /// <returns>-1 if pattern is not found.</returns>
         internal static long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
-            byte[] cxMemory = cbMemory;
-            byte[] cxPattern = cbPattern;
-            int maskLength = szMask.Length;
-            ushort[] matchTable = BuildMatchIndexes(szMask, maskLength);
-            int matchTableLength = matchTable.Length;
-            Vector<byte>[] patternVectors = PadPatternToVector(cxPattern);
+            ref byte pCxMemory = ref MemoryMarshal.GetArrayDataReference(cbMemory);
+            ref byte pCxPattern = ref MemoryMarshal.GetArrayDataReference(cbPattern);
 
-            int searchLength = cxMemory.Length - (_simdLength > cxPattern.Length ? _simdLength : cxPattern.Length);
-            for (int position = 0; position < searchLength; position++)
+            ReadOnlySpan<ushort> matchTable = BuildMatchIndexes(szMask, szMask.Length);
+            int matchTableLength = matchTable.Length;
+            Vector128<byte>[] patternVectors = PadPatternToVector128(cbPattern);
+            ref Vector128<byte> pVec = ref patternVectors[0];
+            int vectorLength = patternVectors.Length;
+
+            int searchLength = cbMemory.Length - (SIMDLENGTH128 > cbPattern.Length ? SIMDLENGTH128 : cbPattern.Length);
+            for (int position = 0; position < searchLength; position++, pCxMemory = ref Unsafe.Add(ref pCxMemory, 1))
             {
-                if (cxPattern[0] != cxMemory[position])
+                if (pCxPattern != pCxMemory)
                 {
-                    if (cxPattern[0] != cxMemory[position+1])
+                    if (pCxPattern != Unsafe.Add(ref pCxMemory, 1))
+                    {
                         position++;
+                        pCxMemory = ref Unsafe.Add(ref pCxMemory, 1);
+                    }
                     continue;
                 }
 
                 int iMatchTableIndex = 0;
                 bool found = true;
-                for (int i = 0; i < patternVectors.Length; i++)
+                for (int i = 0; i < vectorLength; i++)
                 {
-                    Vector<byte> compareResult = patternVectors[i] - new Vector<byte>(cxMemory, position + 1 + (i * _simdLength));
+                    int compareResult = Sse2.MoveMask(Sse2.CompareEqual(Unsafe.Add(ref pVec, i), Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref pCxMemory, 1 + (i * SIMDLENGTH128)))));
+
                     for (; iMatchTableIndex < matchTableLength; iMatchTableIndex++)
                     {
                         int matchIndex = matchTable[iMatchTableIndex];
-                        if (i > 0) matchIndex -= i * _simdLength;
-                        if (matchIndex >= _simdLength)
+                        if (i > 0) matchIndex -= i * SIMDLENGTH128;
+                        if (matchIndex >= SIMDLENGTH128)
                             break;
-                        if (compareResult[matchIndex] == 0x00)
+                        if (((compareResult >> matchIndex) & 1) == 1)
                             continue;
                         found = false;
                         break;
@@ -93,18 +101,19 @@ namespace PatternScanBench.Implementations
         /// <param name="szMask">The mask.</param>
         /// <param name="maskLength">The length of the mask.</param>
         /// <returns></returns>
-        private static ushort[] BuildMatchIndexes(string szMask, int maskLength)
+        private static ReadOnlySpan<ushort> BuildMatchIndexes(string szMask, int maskLength)
         {
             ushort[] fullMatchTable = new ushort[maskLength];
+
             int matchCount = 0;
-            for (ushort i = 1; i < maskLength; i++)
+            for (ushort i = 1; i < maskLength; ++i)
             {
                 if (szMask[i] != 'x') continue;
                 fullMatchTable[matchCount] = (ushort)(i - 1);
                 matchCount++;
             }
-            ushort[] matchTable = new ushort[matchCount];
-            Array.Copy(fullMatchTable, matchTable, matchCount);
+
+            ReadOnlySpan<ushort> matchTable = new ReadOnlySpan<ushort>(fullMatchTable).Slice(0, matchCount);
             return matchTable;
         }
 
@@ -113,53 +122,41 @@ namespace PatternScanBench.Implementations
         /// </summary>
         /// <param name="cbPattern">The pattern.</param>
         /// <returns></returns>
-        private static Vector<byte>[] PadPatternToVector(byte[] cbPattern)
+        private static Vector128<byte>[] PadPatternToVector128(in byte[] cbPattern)
         {
-            int vectorCount = (int)Math.Ceiling((cbPattern.Length - 1) / (float)_simdLength);
-            byte[] paddedPattern = new byte[vectorCount * _simdLength];
-            Buffer.BlockCopy(cbPattern, 1, paddedPattern, 0, cbPattern.Length - 1);
-            Vector<byte>[] patternVectors = new Vector<byte>[vectorCount];
+            int patternLen = cbPattern.Length;
+            int vectorCount = (int)Math.Ceiling((patternLen - 1) / (float)SIMDLENGTH128);
+            Vector128<byte>[] patternVectors = new Vector128<byte>[vectorCount];
+            ref byte pPattern = ref cbPattern[1];
+            patternLen--;
             for (int i = 0; i < vectorCount; i++)
-                patternVectors[i] = new Vector<byte>(paddedPattern, _simdLength * i);
-            return patternVectors;
-        }
-
-        private enum JitVersion
-        {
-            MsX64, RyuJit, Unknown
-        }
-
-        private class JitVersionInfo
-        {
-            internal JitVersion GetJitVersion()
             {
-                #if DEBUG
-                return JitVersion.Unknown;
-                #endif
-                if (IsMsX64())
-                    return JitVersion.MsX64;
-                return JitVersion.RyuJit;
-            }
-
-            private int bar;
-
-            /// <summary>
-            /// Uses the JIT-x64 sub-expression elimination optimizer _bug to check if we use MsX64 JIT.
-            /// Only works with code optimizations enabled so we can't determine JIT in DEBUG.
-            /// </summary>
-            /// https://aakinshin.net/posts/subexpression-elimination-bug-in-jit-x64/
-            /// <returns>True if _bug is present; default x64 JIT is used.</returns>
-            private bool IsMsX64(int step = 1)
-            {
-                var value = 0;
-                for (int i = 0; i < step; i++)
+                if (i < vectorCount - 1)
+                    patternVectors[i] = Unsafe.As<byte, Vector128<byte>>(ref Unsafe.Add(ref pPattern, i * SIMDLENGTH128));
+                else
                 {
-                    bar = i + 10;
-                    for (int j = 0; j < 2 * step; j += step)
-                        value = j + 10;
+                    int o = i * SIMDLENGTH128;
+                    patternVectors[i] = Vector128.Create(
+                            Unsafe.Add(ref pPattern, o + 0),
+                            o + 1 < patternLen ? Unsafe.Add(ref pPattern, o + 1) : (byte)0,
+                            o + 2 < patternLen ? Unsafe.Add(ref pPattern, o + 2) : (byte)0,
+                            o + 3 < patternLen ? Unsafe.Add(ref pPattern, o + 3) : (byte)0,
+                            o + 4 < patternLen ? Unsafe.Add(ref pPattern, o + 4) : (byte)0,
+                            o + 5 < patternLen ? Unsafe.Add(ref pPattern, o + 5) : (byte)0,
+                            o + 6 < patternLen ? Unsafe.Add(ref pPattern, o + 6) : (byte)0,
+                            o + 7 < patternLen ? Unsafe.Add(ref pPattern, o + 7) : (byte)0,
+                            o + 8 < patternLen ? Unsafe.Add(ref pPattern, o + 8) : (byte)0,
+                            o + 9 < patternLen ? Unsafe.Add(ref pPattern, o + 9) : (byte)0,
+                            o + 10 < patternLen ? Unsafe.Add(ref pPattern, o + 10) : (byte)0,
+                            o + 11 < patternLen ? Unsafe.Add(ref pPattern, o + 11) : (byte)0,
+                            o + 12 < patternLen ? Unsafe.Add(ref pPattern, o + 12) : (byte)0,
+                            o + 13 < patternLen ? Unsafe.Add(ref pPattern, o + 13) : (byte)0,
+                            o + 14 < patternLen ? Unsafe.Add(ref pPattern, o + 14) : (byte)0,
+                            o + 15 < patternLen ? Unsafe.Add(ref pPattern, o + 15) : (byte)0
+                            );
                 }
-                return value == 20 + step;
             }
+            return patternVectors;
         }
     }
 }

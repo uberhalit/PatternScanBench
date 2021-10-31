@@ -11,7 +11,7 @@ namespace PatternScanBench.Implementations
 
         * NO unsafe code
         * NO DLLs/libraries (must work cross-platform)
-        * NO assembly references outside of default .NET 5 (except from Microsoft as part of their "extended dotnetframework")
+        * NO assembly references outside of default .NET 5 (except Microsofts "extended dotnetframework")
         * NO changes to build process
         * has to work on 64 bit Windows 10
         * has to work on **most** modern AMD64 processors

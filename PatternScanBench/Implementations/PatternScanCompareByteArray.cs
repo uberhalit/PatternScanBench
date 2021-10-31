@@ -16,7 +16,7 @@ namespace PatternScanBench.Implementations
         /// <summary>
         /// Represents a '?' in a byte pattern, can not be matched...
         /// </summary>
-        private const byte wildcard = 0xCC;
+        private const byte WILDCARD = 0xCC;
 
         /// <summary>
         /// Returns address of pattern using 'CompareByteArray' implementation by fdsasdf. Can match 0.
@@ -50,11 +50,10 @@ namespace PatternScanBench.Implementations
 
         private static void GenerateWildcardPattern(in byte[] cbPattern, ref byte[] newPattern, string szMask)
         {
+            int mskLen = szMask.Length;
             Buffer.BlockCopy(cbPattern, 0, newPattern, 0, cbPattern.Length);
-            for (int i = 0; i < szMask.Length; i++)
-            {
-                if (szMask[i] != 'x') newPattern[i] = wildcard;
-            }
+            for (int i = 0; i < mskLen; i++)
+                if (szMask[i] != 'x') newPattern[i] = WILDCARD;
         }
 
         private static bool CompareByteArray(ref byte Data, ref byte[] newPattern, int signatureLength)
@@ -64,7 +63,7 @@ namespace PatternScanBench.Implementations
             Data = ref Unsafe.Add(ref Data, 1);
             for (; iSignature < signatureLength; ++iSignature, Data = ref Unsafe.Add(ref Data, 1), Signature = ref Unsafe.Add(ref Signature, 1))
             {
-                if (Signature == wildcard)
+                if (Signature == WILDCARD)
                     continue;
                 if (Data != Signature)
                     return false;
