@@ -46,6 +46,17 @@ namespace PatternScanBench
             }
         }
 
+        [Benchmark(Description = "ALittleBitNaiveFor1 by DI20ID")]
+        public void ALittleBitNaiveFor1()
+        {
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanALittleBitNaiveFor1.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
+
         [Benchmark(Description = "Exodia by mrexodia")]
         public void Exodia()
         {
