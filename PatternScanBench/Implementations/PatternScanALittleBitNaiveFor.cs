@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace PatternScanBench.Implementations
 { 
@@ -17,46 +18,61 @@ namespace PatternScanBench.Implementations
         /// <returns>-1 if pattern is not found.</returns>
         internal static long FindPattern(in byte[] cbMemory, in byte[] cbPattern, string szMask)
         {
-            long ix;
-            int iy;
+            int cbMemoryL = cbMemory.Length;
+            int cbPatternL = cbPattern.Length;
+            int[] cbPatternIndexes = new int[cbPatternL+1];
+            int[] tcbPatternIndexes = new int[cbPatternL];
 
-            List<byte> not0PatternBytesList = new List<byte>();
-            List<int> not0PatternBytesIndexList = new List<int>();
+            ref byte PcbMemory = ref cbMemory[0];
+            ref byte PcbPattern = ref cbPattern[0];
+            ref int PcbPatternIndexes = ref cbPatternIndexes[0];
+            ref int tPcbPatternIndexes = ref tcbPatternIndexes[0];
 
-            int dataLength = cbMemory.Length - cbPattern.Length;
+          
 
-            for (iy = cbPattern.Length - 1; iy > -1; iy--)
+            int tcbPatternL= 0;
+            int l = 0;
+            for (int i = 0; i < cbPatternL; i++)
             {
-                if (szMask[iy] == 'x')
+                l++;
+                if(szMask[i] == 'x')
                 {
-                    not0PatternBytesList.Add(cbPattern[iy]);
-                    not0PatternBytesIndexList.Add(iy);
+                   tcbPatternL++;
+                   PcbPatternIndexes = l;
+                   PcbPatternIndexes = ref Unsafe.Add(ref PcbPatternIndexes, 1);
+                   l = 0;
                 }
             }
 
-            byte[] not0PatternBytesArray = not0PatternBytesList.ToArray();
-            int not0PatternBytesL = not0PatternBytesArray.Length;
-            int[] not0PatternBytesIndexArray = not0PatternBytesIndexList.ToArray();
+            PcbPatternIndexes = ref cbPatternIndexes[0];
 
-            for (ix = 0; ix < dataLength; ix++)
+            for (int i = 0; i < cbMemoryL; i++, PcbMemory = ref Unsafe.Add(ref PcbMemory, 1))
             {
-                if (not0PatternBytesArray[not0PatternBytesL - 1] != cbMemory[ix]) continue;
-                bool check = true;
-
-                for (iy = not0PatternBytesArray.Length - 1; iy > -1; iy--)
+               //if(i == 0x198A9A)
+               //{
+               //    int k = 10;
+               //}
+                if(PcbMemory == PcbPattern)
                 {
-                    if (not0PatternBytesArray[iy] == cbMemory[ix + not0PatternBytesIndexArray[iy]])
-                        continue;
-                    check = false;
-                    break;
-                }
+                    ref byte xPcbMemory = ref PcbMemory;
+                    ref byte xPcbPattern = ref PcbPattern;
+                    ref int xPcbPatternIndexes = ref PcbPatternIndexes;
+                    bool check = true;
 
-                if (check)
-                {
-                    return ix;
+                    for (int j = 0; j < tcbPatternL; j++, xPcbPatternIndexes = ref Unsafe.Add(ref xPcbPatternIndexes, 1), xPcbMemory = ref Unsafe.Add(ref xPcbMemory, xPcbPatternIndexes), xPcbPattern = ref Unsafe.Add(ref xPcbPattern, xPcbPatternIndexes))
+                    {
+                        if(xPcbMemory != xPcbPattern)
+                        {
+                            check = false;
+                            break;
+                        }
+                        if(j == tcbPatternL -1)
+                        {
+                            if (check) return i;
+                        }
+                    }
                 }
             }
-
             return -1;
         }
     }

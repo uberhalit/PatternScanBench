@@ -34,6 +34,17 @@ namespace PatternScanBench
                 }
             }
          */
+      
+        [Benchmark(Description = "DistanceMask by h4ppywastaken")]
+        public void DistanceMask()
+        {
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanDistanceMask.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
 
         [Benchmark(Description = "ALittleBitNaiveFor by DI20ID")]
         public void ALittleBitNaiveFor()
@@ -45,7 +56,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-        
+
         [Benchmark(Description = "Exodia by mrexodia")]
         public void Exodia()
         {
@@ -153,17 +164,6 @@ namespace PatternScanBench
             foreach (MemoryPattern pattern in MemoryPatterns)
             {
                 long result = PatternScanSpanEquals.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
-                if (result != pattern.ExpectedAddress)
-                    throw new Exception("Pattern not found...");
-            }
-        }
-
-        [Benchmark(Description = "DistanceMask by h4ppywastaken")]
-        public void DistanceMask()
-        {
-            foreach (MemoryPattern pattern in MemoryPatterns)
-            {
-                long result = PatternScanDistanceMask.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
                 if (result != pattern.ExpectedAddress)
                     throw new Exception("Pattern not found...");
             }
