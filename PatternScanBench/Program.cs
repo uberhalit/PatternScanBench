@@ -158,6 +158,17 @@ namespace PatternScanBench
             }
         }
 
+        [Benchmark(Description = "DistanceMask by h4ppywastaken")]
+        public void DistanceMask()
+        {
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanDistanceMask.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
+
         /// <summary>
         /// The entire memory to scan patterns in.
         /// </summary>
