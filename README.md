@@ -2,7 +2,7 @@
 
 A small and simple benchmark for pattern scan (findpattern) implementations written in C# inspired by [this great C++ comparison](https://github.com/learn-more/findpattern-bench). Aimed to compare real-world scanning performance without any frills.
 
-[![PatternScanBenchmark](https://camo.githubusercontent.com/8508cb6dd86f0529aeb049d0978577b8bc7704ab1db5a54ab3c175fe8406d2d6/68747470733a2f2f692e696d6775722e636f6d2f4742364b5854712e706e67)](#)
+[![PatternScanBenchmark](https://camo.githubusercontent.com/43fe6c4cca103a06d6527c565137134f764bab1c1da3e254b5dc55bf7527c18d/68747470733a2f2f692e696d6775722e636f6d2f4b3066384458312e706e67)](#)
 
 ## Contributing
 

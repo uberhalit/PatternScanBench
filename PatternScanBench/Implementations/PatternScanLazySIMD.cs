@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -8,7 +7,7 @@ using System.Runtime.Intrinsics.X86;
 namespace PatternScanBench.Implementations
 {
     /// <summary>
-    /// Pattern scan implementation 'NaiveSIMD' - by uberhalit
+    /// Pattern scan implementation 'LazySIMD' - by uberhalit
     /// https://github.com/uberhalit
     /// 
     /// Uses SIMD instructions on SSE2-supporting processors, the longer the pattern the more efficient this should get.
@@ -16,7 +15,7 @@ namespace PatternScanBench.Implementations
     /// Ideally a pattern would be a multiple of (xmm0 register size) / 8 so all available space gets used in calculations.
     /// Can be optimized further as currently the compiler adds a few unnecessary array boundry checks.
     /// </summary>
-    internal class PatternScanNaiveSIMD
+    internal class PatternScanLazySIMD
     {
         /// <summary>
         /// Length of an SSE2 vector in bytes.
@@ -24,19 +23,19 @@ namespace PatternScanBench.Implementations
         private const int SIMDLENGTH128 = 16;
 
         /// <summary>
-        /// Initializes a new 'PatternScanNaiveSIMD'.
+        /// Initializes a new 'PatternScanLazySIMD'.
         /// </summary>
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <returns>An optional string to display next to benchmark results.</returns>
         internal static void Init(in byte[] cbMemory)
         {
             Vector128<byte> tmp = Vector128.Create((byte)0); // used to pre-load dependency if GC has over-optimized us out of existence already...
-            if (!Vector.IsHardwareAccelerated || !Sse2.IsSupported)
+            if (!Sse2.IsSupported)
                 throw new NotSupportedException("SIMD not HW accelerated...");
         }
 
         /// <summary>
-        /// Returns address of pattern using 'NaiveSIMD' implementation by uberhalit. Can match 0.
+        /// Returns address of pattern using 'LazySIMD' implementation by uberhalit. Can match 0.
         /// </summary>
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
@@ -53,18 +52,32 @@ namespace PatternScanBench.Implementations
             ref Vector128<byte> pVec = ref patternVectors[0];
             int vectorLength = patternVectors.Length;
 
+            Vector128<byte> firstByteVec = Vector128.Create(pCxPattern);
+            ref Vector128<byte> pFirstVec = ref firstByteVec;
+
             int searchLength = cbMemory.Length - (SIMDLENGTH128 > cbPattern.Length ? SIMDLENGTH128 : cbPattern.Length);
             for (int position = 0; position < searchLength; position++, pCxMemory = ref Unsafe.Add(ref pCxMemory, 1))
             {
-                if (pCxPattern != pCxMemory)
+                //int findFirstByte = Avx2.MoveMask(Avx2.CompareEqual(pFirstVec, Unsafe.As<byte, Vector256<byte>>(ref pCxMemory)));
+                int findFirstByte = Sse2.MoveMask(Sse2.CompareEqual(pFirstVec, Unsafe.As<byte, Vector128<byte>>(ref pCxMemory)));
+                if (findFirstByte == 0)
                 {
-                    if (pCxPattern != Unsafe.Add(ref pCxMemory, 1))
-                    {
-                        position++;
-                        pCxMemory = ref Unsafe.Add(ref pCxMemory, 1);
-                    }
+                    position += SIMDLENGTH128 - 1;
+                    pCxMemory = ref Unsafe.Add(ref pCxMemory, SIMDLENGTH128 - 1);
                     continue;
                 }
+                int offset = 0;
+                for (int i = 0; i < SIMDLENGTH128; i++)
+                {
+                    if (((findFirstByte >> i) & 1) == 1)
+                    {
+                        offset = i;
+                        break;
+                    }
+                }
+
+                position += offset;
+                pCxMemory = ref Unsafe.Add(ref pCxMemory, offset);
 
                 int iMatchTableIndex = 0;
                 bool found = true;
