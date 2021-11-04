@@ -22,26 +22,31 @@ namespace PatternScanBench.Implementations
             int cbPatternL = cbPattern.Length;
             int[] cbPatternIndexes = new int[cbPatternL+1];
             int[] tcbPatternIndexes = new int[cbPatternL];
+            char[] bMask = szMask.ToCharArray();
+            int tcbPatternL = 0;
+            int l = 0;
 
             ref byte PcbMemory = ref cbMemory[0];
             ref byte PcbPattern = ref cbPattern[0];
             ref int PcbPatternIndexes = ref cbPatternIndexes[0];
             ref int tPcbPatternIndexes = ref tcbPatternIndexes[0];
+            ref char PbMask = ref bMask[0];
 
-          
 
-            int tcbPatternL= 0;
-            int l = 0;
+
+
+
             for (int i = 0; i < cbPatternL; i++)
             {
                 l++;
-                if(szMask[i] == 'x')
+                if(PbMask == 120)
                 {
                    tcbPatternL++;
                    PcbPatternIndexes = l;
                    PcbPatternIndexes = ref Unsafe.Add(ref PcbPatternIndexes, 1);
                    l = 0;
                 }
+                PbMask = ref Unsafe.Add(ref PbMask, 1);
             }
 
             PcbPatternIndexes = ref cbPatternIndexes[0];
