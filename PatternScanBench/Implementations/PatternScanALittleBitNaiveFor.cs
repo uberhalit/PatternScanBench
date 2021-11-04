@@ -21,7 +21,7 @@ namespace PatternScanBench.Implementations
             int cbMemoryL = cbMemory.Length;
             int cbPatternL = cbPattern.Length;
             int[] cbPatternIndexes = new int[cbPatternL+1];
-            int[] tcbPatternIndexes = new int[cbPatternL];
+            
             char[] bMask = szMask.ToCharArray();
             int tcbPatternL = 0;
             int l = 0;
@@ -29,12 +29,8 @@ namespace PatternScanBench.Implementations
             ref byte PcbMemory = ref cbMemory[0];
             ref byte PcbPattern = ref cbPattern[0];
             ref int PcbPatternIndexes = ref cbPatternIndexes[0];
-            ref int tPcbPatternIndexes = ref tcbPatternIndexes[0];
+            
             ref char PbMask = ref bMask[0];
-
-
-
-
 
             for (int i = 0; i < cbPatternL; i++)
             {
@@ -63,7 +59,7 @@ namespace PatternScanBench.Implementations
                     ref byte xPcbPattern = ref PcbPattern;
                     ref int xPcbPatternIndexes = ref PcbPatternIndexes;
                     bool check = true;
-
+            
                     for (int j = 0; j < tcbPatternL; j++, xPcbPatternIndexes = ref Unsafe.Add(ref xPcbPatternIndexes, 1), xPcbMemory = ref Unsafe.Add(ref xPcbMemory, xPcbPatternIndexes), xPcbPattern = ref Unsafe.Add(ref xPcbPattern, xPcbPatternIndexes))
                     {
                         if(xPcbMemory != xPcbPattern)
@@ -71,47 +67,35 @@ namespace PatternScanBench.Implementations
                             check = false;
                             break;
                         }
-                        if(j == tcbPatternL -1)
+                        else if(j == tcbPatternL -1)
                         {
                             if (check) return i;
                         }
                     }
                 }
             }
+
             return -1;
         }
     }
 }
-            //while (true)
-          //{
-          //    if (PcbMemory == PcbPattern)
-          //    {
-          //        ref byte xPcbMemory = ref PcbMemory;
-          //        ref byte xPcbPattern = ref PcbPattern;
-          //        ref int xPcbPatternIndexes = ref PcbPatternIndexes;
-          //        
-          //
-          //        while (xPcbMemory == xPcbPattern)
-          //        {
-          //            int m = (int)Unsafe.ByteOffset(ref PcbMemory, ref xPcbMemory);
-          //
-          //            //int n = (int)Unsafe.ByteOffset(ref cbMemory[0], ref xPcbMemory);
-          //            //if (n == 0x198A9A)
-          //            //{
-          //            //    int k = 10;
-          //            //}
-          //            if (m == cbPatternL - 1)
-          //            {
-          //                int n = (int)Unsafe.ByteOffset(ref cbMemory[0], ref PcbMemory);
-          //                return n;
-          //            }
-          //            xPcbPatternIndexes = ref Unsafe.Add(ref xPcbPatternIndexes, 1);
-          //            xPcbMemory = ref Unsafe.Add(ref xPcbMemory, xPcbPatternIndexes); xPcbPattern = ref Unsafe.Add(ref xPcbPattern, xPcbPatternIndexes);
-          //
-          //
-          //        }
-          //    }
-          //
-          //    PcbMemory = ref Unsafe.Add(ref PcbMemory, 1);
-          //
-          //}
+//while (true)
+//{
+//    if (PcbMemory == PcbPattern)
+//    {
+//        ref byte xPcbMemory = ref PcbMemory;
+//        ref byte xPcbPattern = ref PcbPattern;
+//        ref int xPcbPatternIndexes = ref PcbPatternIndexes;
+//        while (xPcbMemory == xPcbPattern)
+//        {
+//            if ((int)Unsafe.ByteOffset(ref PcbMemory, ref xPcbMemory) == cbPatternL - 1)
+//            {
+//                int n = (int)Unsafe.ByteOffset(ref cbMemory[0], ref PcbMemory);
+//                return n;
+//            }
+//            xPcbPatternIndexes = ref Unsafe.Add(ref xPcbPatternIndexes, 1);
+//            xPcbMemory = ref Unsafe.Add(ref xPcbMemory, xPcbPatternIndexes); xPcbPattern = ref Unsafe.Add(ref xPcbPattern, xPcbPatternIndexes);
+//        }
+//    }
+//    PcbMemory = ref Unsafe.Add(ref PcbMemory, 1);
+//}
