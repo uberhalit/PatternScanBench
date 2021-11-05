@@ -79,23 +79,44 @@ namespace PatternScanBench.Implementations
         }
     }
 }
-//while (true)
+//for (int i = 0; i < cbPatternL; i++)
 //{
+//    PbbMask = (byte)PbMask;
+//    l++;
+//    if (PbbMask == 120)
+//    {
+//   
+//        iPcbPatternIndexes = l;
+//        iPcbPatternIndexes = ref Unsafe.Add(ref iPcbPatternIndexes, 1);
+//        l = 0;
+//    }
+//    PbMask = ref Unsafe.Add(ref PbMask, 1);
+//    PbbMask = ref Unsafe.Add(ref PbbMask, 1);
+//}
+//
+//
+//for (int i = 0; i < cbMemoryL; i++, PcbMemory = ref Unsafe.Add(ref PcbMemory, 1))
+//{
+//  //if(i == 0x198A9A)
+//  //{
+//  //    int k = 10;
+//  //}
 //    if (PcbMemory == PcbPattern)
 //    {
 //        ref byte xPcbMemory = ref PcbMemory;
 //        ref byte xPcbPattern = ref PcbPattern;
 //        ref int xPcbPatternIndexes = ref PcbPatternIndexes;
-//        while (xPcbMemory == xPcbPattern)
+//        
+//        while (true)
 //        {
-//            if ((int)Unsafe.ByteOffset(ref PcbMemory, ref xPcbMemory) == cbPatternL - 1)
-//            {
-//                int n = (int)Unsafe.ByteOffset(ref cbMemory[0], ref PcbMemory);
-//                return n;
-//            }
-//            xPcbPatternIndexes = ref Unsafe.Add(ref xPcbPatternIndexes, 1);
-//            xPcbMemory = ref Unsafe.Add(ref xPcbMemory, xPcbPatternIndexes); xPcbPattern = ref Unsafe.Add(ref xPcbPattern, xPcbPatternIndexes);
+//            xPcbPatternIndexes = ref Unsafe.Add(ref xPcbPatternIndexes, 1); Unsafe.WriteUnaligned(ref xPcbMemory, xPcbPattern);
+//            xPcbMemory = ref Unsafe.Add(ref xPcbMemory, xPcbPatternIndexes);
+//            xPcbPattern = ref Unsafe.Add(ref xPcbPattern, xPcbPatternIndexes);
+//            if (xPcbMemory != xPcbPattern) 
+//                break;
+//            else if ((int)Unsafe.ByteOffset(ref PcbMemory, ref xPcbMemory) == cbPatternL - 1) 
+//                return i;
 //        }
 //    }
-//    PcbMemory = ref Unsafe.Add(ref PcbMemory, 1);
 //}
+
