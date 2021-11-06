@@ -24,7 +24,6 @@ namespace PatternScanBench.Implementations
             int search_len = cbMemory.Length;
             ref byte region_it = ref cbMemory[0];
             ref byte pattern = ref cbPattern[0];
-            //ReadOnlySpan<char> mask = szMask.AsSpan();
 
             for (int i = 0; i < search_len; ++i, region_it = ref Unsafe.Add(ref region_it, 1))
             {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -26,7 +27,6 @@ namespace PatternScanBench.Implementations
         /// Initializes a new 'PatternScanLazySIMD'.
         /// </summary>
         /// <param name="cbMemory">The byte array to scan.</param>
-        /// <returns>An optional string to display next to benchmark results.</returns>
         internal static void Init(in byte[] cbMemory)
         {
             Vector128<byte> tmp = Vector128.Create((byte)0); // used to pre-load dependency if GC has over-optimized us out of existence already...
@@ -55,26 +55,18 @@ namespace PatternScanBench.Implementations
             Vector128<byte> firstByteVec = Vector128.Create(pCxPattern);
             ref Vector128<byte> pFirstVec = ref firstByteVec;
 
+            int simdJump = SIMDLENGTH128 - 1;
             int searchLength = cbMemory.Length - (SIMDLENGTH128 > cbPattern.Length ? SIMDLENGTH128 : cbPattern.Length);
             for (int position = 0; position < searchLength; position++, pCxMemory = ref Unsafe.Add(ref pCxMemory, 1))
             {
-                //int findFirstByte = Avx2.MoveMask(Avx2.CompareEqual(pFirstVec, Unsafe.As<byte, Vector256<byte>>(ref pCxMemory)));
                 int findFirstByte = Sse2.MoveMask(Sse2.CompareEqual(pFirstVec, Unsafe.As<byte, Vector128<byte>>(ref pCxMemory)));
                 if (findFirstByte == 0)
                 {
-                    position += SIMDLENGTH128 - 1;
-                    pCxMemory = ref Unsafe.Add(ref pCxMemory, SIMDLENGTH128 - 1);
+                    position += simdJump;
+                    pCxMemory = ref Unsafe.Add(ref pCxMemory, simdJump);
                     continue;
                 }
-                int offset = 0;
-                for (int i = 0; i < SIMDLENGTH128; i++)
-                {
-                    if (((findFirstByte >> i) & 1) == 1)
-                    {
-                        offset = i;
-                        break;
-                    }
-                }
+                int offset = BitOperations.TrailingZeroCount((uint)findFirstByte);
 
                 position += offset;
                 pCxMemory = ref Unsafe.Add(ref pCxMemory, offset);
