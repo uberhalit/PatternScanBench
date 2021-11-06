@@ -21,7 +21,7 @@ namespace PatternScanBench.Implementations
             int cbMemoryL = cbMemory.Length;
             ref byte PcbMemory = ref cbMemory[0];
 
-            int cbPatternL = cbPattern.Length;
+            int cbPatternL = cbPattern.Length - 1;
             ref byte PcbPattern = ref cbPattern[0];
             int[] cbPatternIndexes = new int[cbPatternL + 1];
             ref int PcbPatternIndexes = ref cbPatternIndexes[0];
@@ -32,16 +32,14 @@ namespace PatternScanBench.Implementations
             ref char PbMask = ref bMask[0];
             ref byte PbbMask = ref bbMask[0];
 
-            int l = 0;
-            for (int i = 0; i < cbPatternL; i++)
+            for (int i = 0; i <= cbPatternL; i++)
             {
                 PbbMask = (byte)PbMask;
-                l++;
+                iPcbPatternIndexes++;
                 if (PbbMask == 120)
                 {
-                    iPcbPatternIndexes = l;
                     iPcbPatternIndexes = ref Unsafe.Add(ref iPcbPatternIndexes, 1);
-                    l = 0;
+                    iPcbPatternIndexes = 0;
                 }
                 PbMask = ref Unsafe.Add(ref PbMask, 1);
                 PbbMask = ref Unsafe.Add(ref PbbMask, 1);
@@ -51,19 +49,22 @@ namespace PatternScanBench.Implementations
             {
                 if (PcbMemory == PcbPattern)
                 {
+                    if (Unsafe.Add(ref PcbMemory, cbPatternL) == Unsafe.Add(ref PcbPattern, cbPatternL))
+                    {
                     ref byte xPcbMemory = ref PcbMemory;
                     ref byte xPcbPattern = ref PcbPattern;
                     ref int xPcbPatternIndexes = ref PcbPatternIndexes;
 
-                    while (true)
-                    {
-                        xPcbPatternIndexes = ref Unsafe.Add(ref xPcbPatternIndexes, 1);
-                        xPcbMemory = ref Unsafe.Add(ref xPcbMemory, xPcbPatternIndexes);
-                        xPcbPattern = ref Unsafe.Add(ref xPcbPattern, xPcbPatternIndexes);
-                        if (xPcbMemory != xPcbPattern)
-                            break;
-                        else if ((int)Unsafe.ByteOffset(ref PcbMemory, ref xPcbMemory) == cbPatternL - 1)
-                            return i;
+                        while (true)
+                        {
+                            xPcbPatternIndexes = ref Unsafe.Add(ref xPcbPatternIndexes, 1);
+                            xPcbMemory = ref Unsafe.Add(ref xPcbMemory, xPcbPatternIndexes);
+                            xPcbPattern = ref Unsafe.Add(ref xPcbPattern, xPcbPatternIndexes);
+                            if (xPcbMemory != xPcbPattern)
+                                break;
+                            else if ((int)Unsafe.ByteOffset(ref PcbMemory, ref xPcbMemory) == cbPatternL)
+                                return i;
+                        }
                     }
                 }
             }
