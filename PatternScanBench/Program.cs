@@ -305,7 +305,11 @@ namespace PatternScanBench
 
             if (IntPtr.Size != 8)
                 throw new PlatformNotSupportedException("Supports x64 only");
-
+            //////////////////////////////////////////////////////////////////////////
+           //Benchmark b = new Benchmark();
+           //b.ALittleBitNaiveFor();
+           //return;
+           ///////////////////////////////////////////////////////////////////
             Spinner spinner = new();
             spinner.Start();
             
