@@ -245,10 +245,10 @@ namespace PatternScanBench
         public Benchmark()
         {
             // get dump
-            string memoryDumpPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) + @"\memorydump.dat";
+            string memoryDumpPath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "memorydump.dat");
             if (!File.Exists(memoryDumpPath))
             {
-                memoryDumpPath = Path.Combine(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "..", "..", ".."), "Memorydump") + @"\memorydump.dat";
+                memoryDumpPath = Path.Combine(Path.Combine(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "..", "..", ".."), "Memorydump"), "memorydump.dat");
                 if (!File.Exists(memoryDumpPath))
                     throw new FileNotFoundException("Memory dump not found: " + memoryDumpPath);
             }
