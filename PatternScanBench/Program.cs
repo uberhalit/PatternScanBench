@@ -20,27 +20,75 @@ namespace PatternScanBench
     public class Benchmark
     {
         /**
-         *  Add a benchmark for your implementation here like
+         *  Add a benchmark for your implementation here like the following.
+         *  If it runs multithreaded add an '(MT)' to the Description.
          *  
             [Benchmark(Description = "implementation by author")]
             public void Implementation()
             {
-                PatternScanTemplate.Init(ref CbMemory);
+                PatternScanTemplate.Init(in CbMemory);
                 foreach (MemoryPattern pattern in MemoryPatterns)
                 {
-                    long result = PatternScanTemplate.FindPattern(ref CbMemory, in pattern.CbPattern, pattern.SzMask);
+                    long result = PatternScanTemplate.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
                     if (result != pattern.ExpectedAddress)
                         throw new Exception("Pattern not found...");
                 }
             }
          */
-      
+
         [Benchmark(Description = "DistanceMask by h4ppywastaken")]
         public void DistanceMask()
         {
             foreach (MemoryPattern pattern in MemoryPatterns)
             {
                 long result = PatternScanDistanceMask.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
+
+        [Benchmark(Description = "SIMD by Forza")]
+        public void ForzaSIMD()
+        {
+            PatternScanForzaSIMD.Init(in CbMemory);
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanForzaSIMD.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
+
+        // SLOW
+        //[Benchmark(Description = "Boyer-Moore-Horspool by Forza")]
+        //public void ForzaBMH()
+        //{
+        //    foreach (MemoryPattern pattern in MemoryPatterns)
+        //    {
+        //        long result = PatternScanForzaBMH.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+        //        if (result != pattern.ExpectedAddress)
+        //            throw new Exception("Pattern not found...");
+        //    }
+        //}
+
+        // Can not match 0s, bugged.
+        //[Benchmark(Description = "Boyer-Moore-Horspool by mrexodia")]
+        //public void ExodiaBMH()
+        //{
+        //    foreach (MemoryPattern pattern in MemoryPatterns)
+        //    {
+        //        long result = PatternScanExodiaBMH.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+        //        if (result != pattern.ExpectedAddress)
+        //            throw new Exception("Pattern not found...");
+        //    }
+        //}
+
+        [Benchmark(Description = "Exodia by mrexodia")]
+        public void Exodia()
+        {
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanExodia.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
                 if (result != pattern.ExpectedAddress)
                     throw new Exception("Pattern not found...");
             }
@@ -57,28 +105,41 @@ namespace PatternScanBench
             }
         }
 
-        [Benchmark(Description = "Exodia by mrexodia")]
-        public void Exodia()
+        [Benchmark(Description = "SIMD by DarthTon")]
+        public void DarthTonSIMD()
         {
+            PatternScanDarthTonSIMD.Init(in CbMemory);
             foreach (MemoryPattern pattern in MemoryPatterns)
             {
-                long result = PatternScanExodia.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                long result = PatternScanDarthTonSIMD.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
                 if (result != pattern.ExpectedAddress)
                     throw new Exception("Pattern not found...");
             }
         }
         
-        [Benchmark(Description = "BoyerMooreHorspool by DarthTon")]
-        public void BoyerMooreHorspool()
+        [Benchmark(Description = "SIMD by DarthTon (MT)")]
+        public void DarthTonSIMD_MT()
         {
+            PatternScanDarthTonSIMD.Init(in CbMemory);
             foreach (MemoryPattern pattern in MemoryPatterns)
             {
-                long result = PatternScanBoyerMooreHorspool.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                long result = PatternScanDarthTonSIMD.FindPattern_MT(in CbMemory, in pattern.CbPattern, pattern.SzMask);
                 if (result != pattern.ExpectedAddress)
                     throw new Exception("Pattern not found...");
             }
         }
         
+        [Benchmark(Description = "Boyer-Moore-Horspool by DarthTon")]
+        public void DarthTonBMH()
+        {
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanDarthTonBMH.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
+
         [Benchmark(Description = "BytePointerWithJIT by M i c h a e l")]
         public void BytePointerWithJIT()
         {
@@ -101,29 +162,28 @@ namespace PatternScanBench
             }
         }
         
-        [Benchmark(Description = "LearnMore by learn_more")]
-        public void LearnMore()
-        {
-            foreach (MemoryPattern pattern in MemoryPatterns)
-            {
-                long result = PatternScanLearnMore.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
-                if (result != pattern.ExpectedAddress)
-                    throw new Exception("Pattern not found...");
-            }
-        }
-
-        // SLOW
-        //[Benchmark(Description = "LearnMore v2 by learn_more")]
-        //public void LearnMoreV2()
+        //[Benchmark(Description = "LearnMore by learn_more")]
+        //public void LearnMore()
         //{
         //    foreach (MemoryPattern pattern in MemoryPatterns)
         //    {
-        //        long result = PatternScanLearnMore.FindPatternV2(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+        //        long result = PatternScanLearnMore.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
         //        if (result != pattern.ExpectedAddress)
         //            throw new Exception("Pattern not found...");
         //    }
         //}
-
+        
+        [Benchmark(Description = "LearnMore v2 by learn_more")]
+        public void LearnMoreV2()
+        {
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanLearnMore.FindPatternV2(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
+        
         [Benchmark(Description = "MemoryDLL by erfg12")]
         public void MemoryDLL()
         {
@@ -135,17 +195,18 @@ namespace PatternScanBench
             }
         }
         
-        [Benchmark(Description = "NaiveFor by uberhalit")]
-        public void NaiveFor()
-        {
-            foreach (MemoryPattern pattern in MemoryPatterns)
-            {
-                long result = PatternScanNaiveFor.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
-                if (result != pattern.ExpectedAddress)
-                    throw new Exception("Pattern not found...");
-            }
-        }
-
+        // BASELINE - Slow
+        //[Benchmark(Description = "NaiveFor by uberhalit")]
+        //public void NaiveFor()
+        //{
+        //    foreach (MemoryPattern pattern in MemoryPatterns)
+        //    {
+        //        long result = PatternScanNaiveFor.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+        //        if (result != pattern.ExpectedAddress)
+        //            throw new Exception("Pattern not found...");
+        //    }
+        //}
+        
         [Benchmark(Description = "LazySIMD by uberhalit")]
         public void LazySIMD()
         {
@@ -157,7 +218,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-
+        
         [Benchmark(Description = "SpanEquals by uberhalit")]
         public void SpanEquals()
         {
@@ -226,7 +287,9 @@ namespace PatternScanBench
             { 0x199B12D, "83 ?? ?? ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5" }, // "blender.exe"+199B12D
             { 0x199B12F, "FF ?? ?? ?? ?? ?? ?? ?? 73 ?? 33 ?? 48 8D 54 24 ?? 48 ?? ?? ?? ?? ?? ?? ?? ?? ?? E8 ?? E6 C5 FF 4C" }, // "blender.exe"+199B12F
             // DATA SECTION
-            { 0x1E8CC68 , "48 61 ?? ?? ?? 61 79" } // "blender.exe"+1E8CC68
+            { 0x1E8CC68 , "48 61 ?? ?? ?? 61 79" }, // "blender.exe"+1E8CC68
+            // Should never be found, check for memory exceptions
+            { -1 , "CF 99 DA DF EA EF FF FF BB BB" }
         };
 
         #endregion
@@ -298,18 +361,14 @@ namespace PatternScanBench
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Gray;
 
-            PrintInfo("10 patterns | 10 iterations | 10 implementations");
+            PrintInfo("11 patterns | 10 iterations | 12 implementations");
             Console.Write("To start press ENTER...");
             Console.ReadLine();
             Console.Write("Running ");
 
             if (IntPtr.Size != 8)
                 throw new PlatformNotSupportedException("Supports x64 only");
-            //////////////////////////////////////////////////////////////////////////
-           //Benchmark b = new Benchmark();
-           //b.ALittleBitNaiveFor();
-           //return;
-           ///////////////////////////////////////////////////////////////////
+
             Spinner spinner = new();
             spinner.Start();
             
@@ -360,7 +419,10 @@ namespace PatternScanBench
         /// <param name="report">A report of a succseeded BenchmarkReport.</param>
         internal static void PrintResult(BenchmarkReport report)
         {
-            PrintInfo(report.BenchmarkCase.Descriptor.WorkloadMethodDisplayInfo.Replace("'", ""));
+            string name = report.BenchmarkCase.Descriptor.WorkloadMethodDisplayInfo.Replace("'", "");
+            if (name.Contains("(MT)"))
+                name = name.Replace("(MT)", $"(MT: {Environment.ProcessorCount} Threads)");
+            PrintInfo(name);
             Console.Write("\t");
             Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.Write($"Avg: {(int)(report.ResultStatistics.Mean / 1000000)} ms | Med: {(int)(report.ResultStatistics.Median / 1000000)} ms | Dev: {(report.ResultStatistics.StandardDeviation / 1000000):N2} ms");

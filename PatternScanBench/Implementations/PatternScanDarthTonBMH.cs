@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace PatternScanBench.Implementations
 {
     /// <summary>
-    /// Pattern scan implementation 'BoyerMooreHorspool' - by DarthTon (ported to C# by uberhalit)
+    /// Pattern scan implementation 'Boyer-Moore-Horspool' - by DarthTon (ported to C# by uberhalit)
     /// https://github.com/DarthTon
     /// https://github.com/learn-more/findpattern-bench/blob/master/patterns/DarthTon.h
     /// 
     /// Boyer-Moore-Horspool with wildcards implementation
     /// </summary>
-    internal class PatternScanBoyerMooreHorspool
+    internal class PatternScanDarthTonBMH
     {
         /// <summary>
         /// Represents a '?' in a byte pattern, can not be matched...
@@ -17,7 +18,7 @@ namespace PatternScanBench.Implementations
         private const byte WILDCARD = 0xCC;
 
         /// <summary>
-        /// Returns address of pattern using 'BoyerMooreHorspool' implementation by DarthTon. Can match 0.
+        /// Returns address of pattern using 'Boyer-Moore-Horspool' implementation by DarthTon. Can match 0.
         /// </summary>
         /// <param name="cbMemory">The byte array to scan.</param>
         /// <param name="cbPattern">The byte pattern to look for, wildcard positions are replaced by 0.</param>
@@ -32,13 +33,18 @@ namespace PatternScanBench.Implementations
             GenerateWildcardPattern(in cbPattern, ref newPattern, szMask);
             uint[] badCharSkip = FillShiftTable(ref newPattern);
 
+            ref byte pNewPattern = ref newPattern[0];
+            ref byte pCbMemory = ref cbMemory[0];
+            ref uint pBadCharSkip = ref badCharSkip[0];
+
             // Search
             uint pScanPos = 0;
-            for (; pScanPos <= scanEnd; pScanPos += badCharSkip[cbMemory[pScanPos + last]])
+            for (; pScanPos <= scanEnd; pScanPos += Unsafe.Add(ref pBadCharSkip, Unsafe.Add(ref pCbMemory, (int)(pScanPos + last))))
             {
                 for (int idx = last; idx >= 0; --idx)
                 {
-                    if (newPattern[idx] != WILDCARD && cbMemory[idx + pScanPos] != newPattern[idx])
+                    byte newB = Unsafe.Add(ref pNewPattern, idx);
+                    if (newB != WILDCARD && Unsafe.Add(ref pCbMemory, (int)(idx + pScanPos)) != newB)
                         break;
                     if (idx == 0)
                         return pScanPos;

@@ -10,7 +10,7 @@ namespace PatternScanBench.Implementations
     /// https://www.unknowncheats.me/forum/members/124636.html
     /// https://github.com/learn-more/findpattern-bench/blob/master/patterns/learn_more.h
     ///
-    /// Could be improved by using Span<T>...
+    /// Could be improved by proper use of Span<T>...
     /// </summary>
     internal class PatternScanLearnMore 
     {
@@ -83,7 +83,8 @@ namespace PatternScanBench.Implementations
             int len = cbMemory.Length - mskLen;
             ref byte rangestart = ref cbMemory[0];
             ref byte patt_base = ref cbPattern[0];
-            ReadOnlySpan<char> msk_base = szMask.AsSpan();
+            char[] msk = szMask.ToCharArray();
+            ref char msk_base = ref msk[0];
 
             for (int n = 0; n < len; ++n)
             {
@@ -95,10 +96,12 @@ namespace PatternScanBench.Implementations
             return -1;
         }
 
-        private static bool IsMatch(ref byte addr, ref byte pat, ref ReadOnlySpan<char> msk, int mskLength)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsMatch(ref byte addr, ref byte pat, ref char msk, int mskLength)
         {
             int n = 0;
-            while (Unsafe.Add(ref addr, n) == Unsafe.Add(ref pat, n) || msk[n] == '?') {
+            while (Unsafe.Add(ref addr, n) == Unsafe.Add(ref pat, n) || Unsafe.Add(ref msk, n) == '?') 
+            {
                 if (++n >= mskLength) {
                     return true;
                 }

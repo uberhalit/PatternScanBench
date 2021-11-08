@@ -10,7 +10,7 @@ Feel free to create a pull request with your own patter scan implementation at a
 
 ## Rules
 
-* NO unsafe code
+* NO `/unsafe` compiler option
 * NO DLLs/libraries (must work cross-platform)
 * NO assembly references outside of default .NET 5 (except Microsofts "extended dotnetframework")
 * NO changes to build process

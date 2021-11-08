@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace PatternScanBench.Implementations
 {
@@ -49,6 +50,7 @@ namespace PatternScanBench.Implementations
             return -1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool matchByte(byte b, ref byte p)
         {
             if (p != WILDCARD)
