@@ -2,7 +2,7 @@
 
 A small and simple benchmark for pattern scan (findpattern) implementations written in C# inspired by [this great C++ comparison](https://github.com/learn-more/findpattern-bench). Aimed to compare real-world scanning performance without any frills.
 
-[![PatternScanBenchmark](https://camo.githubusercontent.com/43fe6c4cca103a06d6527c565137134f764bab1c1da3e254b5dc55bf7527c18d/68747470733a2f2f692e696d6775722e636f6d2f4b3066384458312e706e67)](#)
+[![PatternScanBenchmark](https://camo.githubusercontent.com/5701cec8603dacb119a5f6e91e2be01b4e7ba0bbaffa6561e09869767af1aebc/68747470733a2f2f692e696d6775722e636f6d2f4f795a444162682e706e67)](#)
 
 ## Contributing
 
@@ -10,9 +10,8 @@ Feel free to create a pull request with your own patter scan implementation at a
 
 ## Rules
 
-* NO `/unsafe` compiler option
-* NO DLLs/libraries (must work cross-platform)
-* NO assembly references outside of default .NET 5 (except Microsofts "extended dotnetframework")
+* NO `-unsafe` compiler option
+* NO DLLs/libraries/WinAPIs (must work cross-platform)
 * NO changes to build process
 * has to work on 64 bit Windows/Linux
 * has to work on **most** modern AMD64 processors
