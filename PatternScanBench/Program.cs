@@ -104,7 +104,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-
+        
         [Benchmark(Description = "SIMD by DarthTon")]
         public void DarthTonSIMD()
         {
@@ -139,7 +139,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-
+        
         [Benchmark(Description = "BytePointerWithJIT by M i c h a e l")]
         public void BytePointerWithJIT()
         {
@@ -150,7 +150,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-        
+
         [Benchmark(Description = "CompareByteArray by fdsasdf")]
         public void CompareByteArray()
         {
@@ -161,7 +161,18 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-        
+
+        [Benchmark(Description = "BluePie by aghontpi")]
+        public void BluePie()
+        {
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanBluePie.FindPattern(in CbMemory, in pattern.CbPattern, pattern.SzMask);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
+
         //[Benchmark(Description = "LearnMore by learn_more")]
         //public void LearnMore()
         //{
@@ -172,7 +183,7 @@ namespace PatternScanBench
         //            throw new Exception("Pattern not found...");
         //    }
         //}
-        
+
         [Benchmark(Description = "LearnMore v2 by learn_more")]
         public void LearnMoreV2()
         {
@@ -194,7 +205,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-        
+
         // BASELINE - Slow
         //[Benchmark(Description = "NaiveFor by uberhalit")]
         //public void NaiveFor()
@@ -206,7 +217,7 @@ namespace PatternScanBench
         //            throw new Exception("Pattern not found...");
         //    }
         //}
-        
+
         [Benchmark(Description = "LazySIMD by uberhalit")]
         public void LazySIMD()
         {
@@ -218,7 +229,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-        
+
         [Benchmark(Description = "SpanEquals by uberhalit")]
         public void SpanEquals()
         {
@@ -229,7 +240,7 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-
+        
         /// <summary>
         /// The entire memory to scan patterns in.
         /// </summary>
@@ -255,13 +266,11 @@ namespace PatternScanBench
 
             // read bytes and check hash
             byte[] moduleMemory = File.ReadAllBytes(memoryDumpPath);
-            using (SHA1Managed sha1Managed = new SHA1Managed())
-            {
-                byte[] hash = sha1Managed.ComputeHash(moduleMemory);
-                string sha1 = string.Concat(hash.Select(b => b.ToString("x2")));
-                if (!sha1.Equals(TARGET_HASH, StringComparison.OrdinalIgnoreCase))
-                    throw new BadImageFormatException("Memory dump corrupted");
-            }
+            SHA1 sha1 = SHA1.Create();  
+            byte[] hash = sha1.ComputeHash(moduleMemory);
+            string sha1Str = string.Concat(hash.Select(b => b.ToString("x2")));
+            if (!sha1Str.Equals(TARGET_HASH, StringComparison.OrdinalIgnoreCase))
+                throw new BadImageFormatException("Memory dump corrupted");
             this.CbMemory = moduleMemory;
 
             // generate byte patterns
@@ -360,15 +369,15 @@ namespace PatternScanBench
             Console.WriteLine("            - C# version -");
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Gray;
-
-            PrintInfo("11 patterns | 10 iterations | 12 implementations");
+            
+            PrintInfo("11 patterns | 10 iterations | 13 implementations");
             Console.Write("To start press ENTER...");
             Console.ReadLine();
             Console.Write("Running ");
 
             if (IntPtr.Size != 8)
                 throw new PlatformNotSupportedException("Supports x64 only");
-
+            
             Spinner spinner = new();
             spinner.Start();
             
@@ -421,7 +430,7 @@ namespace PatternScanBench
         {
             string name = report.BenchmarkCase.Descriptor.WorkloadMethodDisplayInfo.Replace("'", "");
             if (name.Contains("(MT)"))
-                name = name.Replace("(MT)", $"(MT: {Environment.ProcessorCount} Threads)");
+                name = name.Replace("(MT)", $"(MT: { Environment.ProcessorCount } Threads)");
             PrintInfo(name);
             Console.Write("\t");
             Console.ForegroundColor = ConsoleColor.DarkYellow;

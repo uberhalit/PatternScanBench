@@ -1,6 +1,6 @@
 # PatternScanBenchmark
 
-A small and simple benchmark for pattern scan (findpattern) implementations written in C# inspired by [this great C++ comparison](https://github.com/learn-more/findpattern-bench). Aimed to compare real-world scanning performance without any frills.
+A small and simple benchmark for pattern (AOB) scan (findpattern) implementations written in C# inspired by [this great C++ comparison](https://github.com/learn-more/findpattern-bench). Aimed to compare real-world scanning performance without any frills. Currently 13 different implementations from 11 authors are included.
 
 [![PatternScanBenchmark](https://camo.githubusercontent.com/5701cec8603dacb119a5f6e91e2be01b4e7ba0bbaffa6561e09869767af1aebc/68747470733a2f2f692e696d6775722e636f6d2f4f795a444162682e706e67)](#)
 
@@ -19,12 +19,13 @@ Feel free to create a pull request with your own patter scan implementation at a
 
 ## Prerequisites
 
-* .NET Framework 5.0
+* .NET Framework 6.0
 * 64bit OS
+* SSE/AVX support for some implementations
 
 ## Building
 
-Use Visual Studio 2019 or VSCode to build
+Use Visual Studio 2022 or VSCode to build
 
 ## License
 

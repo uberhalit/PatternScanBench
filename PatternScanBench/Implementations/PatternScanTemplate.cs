@@ -9,14 +9,12 @@ namespace PatternScanBench.Implementations
         5. Remove all multi line comment blocks including this one
         6. Add your Implementation to Benchmark class
 
-        * NO unsafe code
-        * NO DLLs/libraries (must work cross-platform)
-        * NO assembly references outside of default .NET 5 (except Microsofts "extended dotnetframework")
+        * NO -unsafe compiler option
+        * NO DLLs/libraries/WinAPIs (must work cross-platform)
         * NO changes to build process
-        * has to work on 64 bit Windows 10
+        * has to work on 64 bit Windows/Linux
         * has to work on **most** modern AMD64 processors
-        * don't reuse functions from other implementations, keep this class self-contained
-        * Dynamic SIMD support is available through Microsoft's System.Numerics.Vectors (can be embedded)
+        * don't reuse functions from other implementations, keep your class self-contained
      */
     /// <summary>
     /// Pattern scan implementation 'Template' - by author
