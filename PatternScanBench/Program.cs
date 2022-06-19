@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -240,7 +240,19 @@ namespace PatternScanBench
                     throw new Exception("Pattern not found...");
             }
         }
-        
+
+        [Benchmark(Description = "Reloaded.Memory.SigScan (3.0.1) by Sewer56")]
+        public void ReloadedMemorySigscan()
+        {
+            PatternScanReloadedMemorySigscan.Init(in CbMemory);
+            foreach (MemoryPattern pattern in MemoryPatterns)
+            {
+                long result = PatternScanReloadedMemorySigscan.FindPattern(in CbMemory, in pattern);
+                if (result != pattern.ExpectedAddress)
+                    throw new Exception("Pattern not found...");
+            }
+        }
+
         /// <summary>
         /// The entire memory to scan patterns in.
         /// </summary>
@@ -321,6 +333,11 @@ namespace PatternScanBench
         /// </summary>
         internal readonly string SzMask;
 
+        /// <summary>
+        /// The pattern from which this class was instantiated with.
+        /// </summary>
+        internal readonly string SourcePattern;
+
         internal MemoryPattern(long expectedAddress, string pattern)
         {
             string[] saPattern = pattern.Split(' ');
@@ -338,6 +355,7 @@ namespace PatternScanBench
             for (int i = 0; i < saPattern.Length; i++)
                 bPattern[i] = Convert.ToByte(saPattern[i], 0x10);
 
+            SourcePattern = pattern;
             ExpectedAddress = expectedAddress;
             SzMask = szMask;
             CbPattern = bPattern;
@@ -370,7 +388,7 @@ namespace PatternScanBench
             Console.WriteLine();
             Console.ForegroundColor = ConsoleColor.Gray;
             
-            PrintInfo("11 patterns | 10 iterations | 13 implementations");
+            PrintInfo("11 patterns | 10 iterations | 14 implementations");
             Console.Write("To start press ENTER...");
             Console.ReadLine();
             Console.Write("Running ");
